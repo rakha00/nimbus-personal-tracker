@@ -1,0 +1,118 @@
+{
+  "@@locale": "en",
+  "finance": "Finance",
+  "diary": "Diary",
+  "settings": "Settings",
+  "totalBalance": "Total balance",
+  "receivables": "Receivables",
+  "payables": "Debts",
+  "add": "Add",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "deleteConfirm": "Delete this?",
+  "expense": "Expense",
+  "income": "Income",
+  "transfer": "Transfer",
+  "debt": "Debt",
+  "amount": "Amount",
+  "account": "Account",
+  "toAccount": "To account",
+  "category": "Category",
+  "date": "Date",
+  "note": "Note (optional)",
+  "person": "Person",
+  "noAccount": "No account",
+  "debtLend": "Lend",
+  "debtCollect": "Paid back",
+  "debtBorrow": "Borrow",
+  "debtRepay": "Pay back",
+  "txLend": "Lent to {person}",
+  "@txLend": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      }
+    }
+  },
+  "txCollect": "{person} paid back",
+  "@txCollect": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      }
+    }
+  },
+  "txBorrow": "Borrowed from {person}",
+  "@txBorrow": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      }
+    }
+  },
+  "txRepay": "Paid back {person}",
+  "@txRepay": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      }
+    }
+  },
+  "today": "Today",
+  "writeToday": "Write today's note",
+  "diaryHint": "What happened today?",
+  "language": "Language",
+  "accounts": "Accounts",
+  "debts": "Debts and receivables",
+  "newAccount": "New account",
+  "name": "Name",
+  "openingBalance": "Opening balance",
+  "typeCash": "Cash",
+  "typeBank": "Bank",
+  "typeEwallet": "E-wallet",
+  "setupTitle": "Connect to Nimbus",
+  "email": "Email",
+  "password": "Password",
+  "connect": "Connect",
+  "loginFailed": "Couldn't sign in. Check your email and password.",
+  "unlock": "Unlock",
+  "unlockReason": "Unlock Nimbus",
+  "loadFailed": "Couldn't load data. Pull down to try again.",
+  "saveFailed": "Couldn't save. Try again.",
+  "required": "Required",
+  "noTransactions": "No transactions yet",
+  "noDebts": "No open debts",
+  "noAccounts": "Add an account first in Settings",
+  "signOut": "Sign out",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "appearance": "Appearance",
+  "data": "Data",
+  "accountSection": "Account",
+  "filter": "Filter",
+  "reset": "Reset",
+  "all": "All",
+  "moneyIn": "In",
+  "moneyOut": "Out",
+  "search": "Search notes or names",
+  "noMatches": "No transactions match these filters",
+  "spending": "Spending by category",
+  "noSpending": "No spending this month",
+  "allAccounts": "Total across accounts",
+  "peopleOwe": "{count} people",
+  "signOutHint": "You'll need your email and password again",
+  "show": "Show",
+  "uncategorized": "Uncategorized",
+  "diaryEmpty": "Nothing written yet",
+  "@peopleOwe": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kind": "Type"
+}

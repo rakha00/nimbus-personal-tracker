@@ -1,0 +1,4 @@
+server/pb_data/
+.taste-skill/
+app/config.json
+server/.env

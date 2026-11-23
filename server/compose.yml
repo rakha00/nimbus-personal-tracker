@@ -1,0 +1,21 @@
+services:
+  pocketbase:
+    build: .
+    container_name: nimbus-pocketbase
+    restart: unless-stopped
+    volumes:
+      - ./pb_data:/pb/pb_data
+      - ./pb_migrations:/pb/pb_migrations
+    networks: [dokploy-network]
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.nimbus.rule=Host(`${NIMBUS_HOST:?set NIMBUS_HOST in .env}`)
+      - traefik.http.routers.nimbus.entrypoints=websecure
+      - traefik.http.routers.nimbus.tls.certresolver=letsencrypt
+      - traefik.http.routers.nimbus-http.rule=Host(`${NIMBUS_HOST:?set NIMBUS_HOST in .env}`)
+      - traefik.http.routers.nimbus-http.entrypoints=web
+      - traefik.http.routers.nimbus-http.middlewares=redirect-to-https@file
+      - traefik.http.services.nimbus.loadbalancer.server.port=8090
+networks:
+  dokploy-network:
+    external: true
