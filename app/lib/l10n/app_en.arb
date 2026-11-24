@@ -115,5 +115,25 @@
     }
   },
   "kind": "Type",
-  "categoryNotUsed": "Not used for this type"
+  "categoryNotUsed": "Not used for this type",
+  "mediaTab": "Media",
+  "mediaWishlist": "Want to",
+  "mediaDone": "Done",
+  "mediaFilm": "Film",
+  "mediaBook": "Book",
+  "mediaTitle": "Title",
+  "mediaDirector": "Director (optional)",
+  "mediaAuthor": "Author (optional)",
+  "mediaYear": "Year released (optional)",
+  "mediaFinishedOn": "Date finished",
+  "mediaRating": "Rating (optional)",
+  "mediaMarkDone": "Mark as done",
+  "mediaEmptyWishlist": "No films or books on your list yet",
+  "mediaEmptyDone": "Nothing watched or read yet",
+  "mediaSearchHint": "Type a title",
+  "mediaSearchFailed": "Search failed. Check your connection.",
+  "mediaNoResults": "Nothing found",
+  "mediaManual": "Enter manually",
+  "mediaSynopsis": "Synopsis",
+  "mediaFilterHint": "Search title, director or author"
 }

@@ -260,4 +260,65 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get categoryNotUsed => 'Tidak dipakai untuk jenis ini';
+
+  @override
+  String get mediaTab => 'Media';
+
+  @override
+  String get mediaWishlist => 'Ingin';
+
+  @override
+  String get mediaDone => 'Selesai';
+
+  @override
+  String get mediaFilm => 'Film';
+
+  @override
+  String get mediaBook => 'Buku';
+
+  @override
+  String get mediaTitle => 'Judul';
+
+  @override
+  String get mediaDirector => 'Sutradara (opsional)';
+
+  @override
+  String get mediaAuthor => 'Penulis (opsional)';
+
+  @override
+  String get mediaYear => 'Tahun rilis (opsional)';
+
+  @override
+  String get mediaFinishedOn => 'Tanggal selesai';
+
+  @override
+  String get mediaRating => 'Rating (opsional)';
+
+  @override
+  String get mediaMarkDone => 'Tandai selesai';
+
+  @override
+  String get mediaEmptyWishlist =>
+      'Belum ada film atau buku yang ingin ditonton/dibaca';
+
+  @override
+  String get mediaEmptyDone => 'Belum ada yang selesai ditonton/dibaca';
+
+  @override
+  String get mediaSearchHint => 'Ketik judul';
+
+  @override
+  String get mediaSearchFailed => 'Gagal mencari. Periksa koneksi internet.';
+
+  @override
+  String get mediaNoResults => 'Tidak ditemukan';
+
+  @override
+  String get mediaManual => 'Isi manual';
+
+  @override
+  String get mediaSynopsis => 'Sinopsis';
+
+  @override
+  String get mediaFilterHint => 'Cari judul, sutradara, atau penulis';
 }

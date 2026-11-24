@@ -583,6 +583,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not used for this type'**
   String get categoryNotUsed;
+
+  /// No description provided for @mediaTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Media'**
+  String get mediaTab;
+
+  /// No description provided for @mediaWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Want to'**
+  String get mediaWishlist;
+
+  /// No description provided for @mediaDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get mediaDone;
+
+  /// No description provided for @mediaFilm.
+  ///
+  /// In en, this message translates to:
+  /// **'Film'**
+  String get mediaFilm;
+
+  /// No description provided for @mediaBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Book'**
+  String get mediaBook;
+
+  /// No description provided for @mediaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get mediaTitle;
+
+  /// No description provided for @mediaDirector.
+  ///
+  /// In en, this message translates to:
+  /// **'Director (optional)'**
+  String get mediaDirector;
+
+  /// No description provided for @mediaAuthor.
+  ///
+  /// In en, this message translates to:
+  /// **'Author (optional)'**
+  String get mediaAuthor;
+
+  /// No description provided for @mediaYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year released (optional)'**
+  String get mediaYear;
+
+  /// No description provided for @mediaFinishedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Date finished'**
+  String get mediaFinishedOn;
+
+  /// No description provided for @mediaRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating (optional)'**
+  String get mediaRating;
+
+  /// No description provided for @mediaMarkDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as done'**
+  String get mediaMarkDone;
+
+  /// No description provided for @mediaEmptyWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'No films or books on your list yet'**
+  String get mediaEmptyWishlist;
+
+  /// No description provided for @mediaEmptyDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing watched or read yet'**
+  String get mediaEmptyDone;
+
+  /// No description provided for @mediaSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a title'**
+  String get mediaSearchHint;
+
+  /// No description provided for @mediaSearchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed. Check your connection.'**
+  String get mediaSearchFailed;
+
+  /// No description provided for @mediaNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found'**
+  String get mediaNoResults;
+
+  /// No description provided for @mediaManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter manually'**
+  String get mediaManual;
+
+  /// No description provided for @mediaSynopsis.
+  ///
+  /// In en, this message translates to:
+  /// **'Synopsis'**
+  String get mediaSynopsis;
+
+  /// No description provided for @mediaFilterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search title, director or author'**
+  String get mediaFilterHint;
 }
 
 class _AppLocalizationsDelegate

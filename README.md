@@ -14,6 +14,9 @@ toward a personal tracking app that an AI assistant can later read through MCP.
 - **Filters**: month navigation plus type, account, category and text search. The in/out summary
   and the spending-by-category list follow the filter.
 - **Diary**: one entry per day, today's entry always on top.
+- **Media log**: a wishlist of films and books, and a log of what's been watched or read, with
+  date finished, a 1–5 rating and notes. Search fills in cover, year, director or author and
+  synopsis from TMDB (films, needs `TMDB_KEY` in `config.json`) or Google Books.
 - **Device lock**: the app opens with the phone's own fingerprint or PIN and locks again after a
   minute in the background. There is no in-app login screen after the one-time setup.
 - **Light and dark theme**, Indonesian and English UI.

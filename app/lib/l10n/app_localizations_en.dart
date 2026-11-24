@@ -260,4 +260,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryNotUsed => 'Not used for this type';
+
+  @override
+  String get mediaTab => 'Media';
+
+  @override
+  String get mediaWishlist => 'Want to';
+
+  @override
+  String get mediaDone => 'Done';
+
+  @override
+  String get mediaFilm => 'Film';
+
+  @override
+  String get mediaBook => 'Book';
+
+  @override
+  String get mediaTitle => 'Title';
+
+  @override
+  String get mediaDirector => 'Director (optional)';
+
+  @override
+  String get mediaAuthor => 'Author (optional)';
+
+  @override
+  String get mediaYear => 'Year released (optional)';
+
+  @override
+  String get mediaFinishedOn => 'Date finished';
+
+  @override
+  String get mediaRating => 'Rating (optional)';
+
+  @override
+  String get mediaMarkDone => 'Mark as done';
+
+  @override
+  String get mediaEmptyWishlist => 'No films or books on your list yet';
+
+  @override
+  String get mediaEmptyDone => 'Nothing watched or read yet';
+
+  @override
+  String get mediaSearchHint => 'Type a title';
+
+  @override
+  String get mediaSearchFailed => 'Search failed. Check your connection.';
+
+  @override
+  String get mediaNoResults => 'Nothing found';
+
+  @override
+  String get mediaManual => 'Enter manually';
+
+  @override
+  String get mediaSynopsis => 'Synopsis';
+
+  @override
+  String get mediaFilterHint => 'Search title, director or author';
 }
