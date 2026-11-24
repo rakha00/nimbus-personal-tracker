@@ -577,6 +577,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Type'**
   String get kind;
+
+  /// No description provided for @categoryNotUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not used for this type'**
+  String get categoryNotUsed;
 }
 
 class _AppLocalizationsDelegate

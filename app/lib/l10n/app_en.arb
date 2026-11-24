@@ -114,5 +114,6 @@
       }
     }
   },
-  "kind": "Type"
+  "kind": "Type",
+  "categoryNotUsed": "Not used for this type"
 }

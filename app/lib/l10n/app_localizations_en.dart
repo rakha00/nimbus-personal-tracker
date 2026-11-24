@@ -257,4 +257,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kind => 'Type';
+
+  @override
+  String get categoryNotUsed => 'Not used for this type';
 }

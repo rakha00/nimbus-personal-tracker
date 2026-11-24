@@ -257,4 +257,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get kind => 'Jenis';
+
+  @override
+  String get categoryNotUsed => 'Tidak dipakai untuk jenis ini';
 }

@@ -79,5 +79,6 @@
   "show": "Tampilkan",
   "uncategorized": "Tanpa kategori",
   "diaryEmpty": "Belum ada catatan",
-  "kind": "Jenis"
+  "kind": "Jenis",
+  "categoryNotUsed": "Tidak dipakai untuk jenis ini"
 }

@@ -384,6 +384,7 @@ class _FilterSheetState extends State<_FilterSheet> {
     final t = AppLocalizations.of(context);
     final d = widget.data;
     final catKind = f.kind == 'income' ? 'income' : 'expense';
+    final hasCategory = f.kind.isEmpty || f.kind == 'expense' || f.kind == 'income';
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
       child: SingleChildScrollView(
@@ -412,17 +413,33 @@ class _FilterSheetState extends State<_FilterSheet> {
             chips([('', t.all), for (final a in d.accounts) (a.id, a.getStringValue('name'))], f.account,
                 (v) => f.copyWith(account: v)),
           ),
-          if (f.kind.isEmpty || f.kind == 'expense' || f.kind == 'income') ...[
-            const SizedBox(height: 16),
-            Labeled(
-              t.category,
-              chips([
-                ('', t.all),
+          const SizedBox(height: 16),
+          // One fixed-height field whatever the type, so the sheet doesn't jump when the type changes.
+          // The list inside follows the type; transfers and debts have no category.
+          Labeled(
+            t.category,
+            DropdownMenu<String>(
+              key: ValueKey(f.kind), // reset the shown value when the type changes
+              expandedInsets: EdgeInsets.zero,
+              enabled: hasCategory,
+              initialSelection: hasCategory ? f.category : null,
+              hintText: hasCategory ? t.all : t.categoryNotUsed,
+              onSelected: (v) => setState(() => f = f.copyWith(category: v ?? '')),
+              dropdownMenuEntries: [
+                DropdownMenuEntry(value: '', label: t.all),
                 for (final c in d.categories)
-                  if (f.kind.isEmpty || c.getStringValue('kind') == catKind) (c.id, c.getStringValue('name')),
-              ], f.category, (v) => f.copyWith(category: v)),
+                  if (f.kind.isEmpty || c.getStringValue('kind') == catKind)
+                    DropdownMenuEntry(
+                      value: c.id,
+                      label: c.getStringValue('name'),
+                      trailingIcon: f.kind.isEmpty
+                          ? Text(c.getStringValue('kind') == 'income' ? t.income : t.expense,
+                              style: Theme.of(context).textTheme.bodySmall)
+                          : null,
+                    ),
+              ],
             ),
-          ],
+          ),
           const SizedBox(height: 24),
           Row(children: [
             TextButton(
