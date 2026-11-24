@@ -54,6 +54,17 @@ docker compose up -d --build  # expects an external Traefik network named dokplo
 Open `https://<NIMBUS_HOST>/_/` to create the admin account, then add one user in the `users`
 collection for the app.
 
+Backups (`server/backup/`): a systemd timer runs `nimbus-backup` nightly. It copies the database
+with SQLite's online backup API, checks its integrity, keeps 14 days on the server, and, when an
+rclone remote named `gdrive` exists, uploads to Google Drive and keeps 60 days there.
+
+```sh
+install -m 755 server/backup/nimbus-backup.sh /usr/local/bin/nimbus-backup
+cp server/backup/nimbus-backup.{service,timer} /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now nimbus-backup.timer
+rclone config create gdrive drive scope=drive.file && rclone config reconnect gdrive:
+```
+
 ### App
 
 ```sh
