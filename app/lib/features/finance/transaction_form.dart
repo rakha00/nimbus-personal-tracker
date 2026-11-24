@@ -140,7 +140,7 @@ class _TransactionFormState extends State<TransactionForm> {
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, fontFeatures: tabular),
-          decoration: const InputDecoration(prefixText: 'Rp ', hintText: '0', border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none, filled: false),
+          decoration: const InputDecoration(prefixText: 'Rp ', floatingLabelBehavior: FloatingLabelBehavior.always, border: InputBorder.none, enabledBorder: InputBorder.none, focusedBorder: InputBorder.none, filled: false),
           onChanged: (_) => setState(() {}),
         ),
         if ((int.tryParse(amount.text) ?? 0) > 0)
