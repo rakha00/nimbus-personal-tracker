@@ -191,7 +191,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get theme => 'Tema';
 
   @override
-  String get themeSystem => 'Ikuti HP';
+  String get themeSystem => 'Sistem';
 
   @override
   String get themeLight => 'Terang';
