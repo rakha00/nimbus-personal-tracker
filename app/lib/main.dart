@@ -5,6 +5,8 @@ import 'core/backend.dart';
 import 'core/theme.dart';
 import 'features/auth/lock_gate.dart';
 import 'features/auth/setup_screen.dart';
+import 'features/calendar/calendar_screen.dart';
+import 'features/calendar/reminders.dart';
 import 'features/diary/diary_screen.dart';
 import 'features/finance/finance_screen.dart';
 import 'features/media/media_screen.dart';
@@ -14,6 +16,7 @@ import 'l10n/app_localizations.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initBackend();
+  await initReminders();
   runApp(const NimbusApp());
 }
 
@@ -79,6 +82,7 @@ class _HomeShellState extends State<HomeShell> {
         const FinanceScreen(),
         const DiaryScreen(),
         const MediaScreen(),
+        const CalendarScreen(),
         SettingsScreen(onSignOut: widget.onSignOut),
       ]),
       bottomNavigationBar: DecoratedBox(
@@ -90,6 +94,7 @@ class _HomeShellState extends State<HomeShell> {
             NavigationDestination(icon: const Icon(Icons.account_balance_wallet_outlined), label: t.finance),
             NavigationDestination(icon: const Icon(Icons.book_outlined), label: t.diary),
             NavigationDestination(icon: const Icon(Icons.movie_outlined), label: t.mediaTab),
+            NavigationDestination(icon: const Icon(Icons.calendar_month_outlined), label: t.calendar),
             NavigationDestination(icon: const Icon(Icons.settings_outlined), label: t.settings),
           ],
         ),

@@ -106,5 +106,19 @@
   "mediaProgress": "Sedang",
   "mediaStart": "Mulai",
   "mediaCreator": "Pembuat (opsional)",
-  "mediaStudio": "Studio (opsional)"
+  "mediaStudio": "Studio (opsional)",
+  "calendar": "Kalender",
+  "calendarEmptyMonth": "Tidak ada acara bulan ini",
+  "calendarEventTitle": "Judul",
+  "calendarAllDay": "Seharian",
+  "calendarTime": "Jam",
+  "calendarYearly": "Ulang tiap tahun",
+  "calendarReminder": "Pengingat",
+  "calendarAllDayReminderHint": "Untuk acara seharian, pengingat dihitung dari jam 08.00.",
+  "reminderNone": "Tidak ada",
+  "reminderAtStart": "Saat acara mulai",
+  "reminder10m": "10 menit sebelumnya",
+  "reminder1h": "1 jam sebelumnya",
+  "reminder1d": "1 hari sebelumnya",
+  "calendarHoliday": "Libur nasional"
 }

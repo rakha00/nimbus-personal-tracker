@@ -338,4 +338,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mediaStudio => 'Studio (optional)';
+
+  @override
+  String get calendar => 'Calendar';
+
+  @override
+  String get calendarEmptyMonth => 'No events this month';
+
+  @override
+  String get calendarEventTitle => 'Title';
+
+  @override
+  String get calendarAllDay => 'All day';
+
+  @override
+  String get calendarTime => 'Time';
+
+  @override
+  String get calendarYearly => 'Repeat every year';
+
+  @override
+  String get calendarReminder => 'Reminder';
+
+  @override
+  String get calendarAllDayReminderHint =>
+      'For all-day events, reminders count from 08:00.';
+
+  @override
+  String get reminderNone => 'None';
+
+  @override
+  String get reminderAtStart => 'When it starts';
+
+  @override
+  String get reminder10m => '10 minutes before';
+
+  @override
+  String get reminder1h => '1 hour before';
+
+  @override
+  String get reminder1d => '1 day before';
+
+  @override
+  String get calendarHoliday => 'Public holiday';
 }

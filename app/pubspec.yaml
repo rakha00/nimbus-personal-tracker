@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_local_notifications: 22.3.3 # 23+ needs compileSdk 37 and a newer Android Gradle Plugin
   flutter_localizations:
     sdk: flutter
   flutter_secure_storage: ^11.2.0
@@ -16,6 +17,7 @@ dependencies:
   intl: ^0.20.2
   local_auth: ^3.0.2
   pocketbase: ^0.26.0
+  timezone: ^0.11.2
 
 dev_dependencies:
   flutter_test:

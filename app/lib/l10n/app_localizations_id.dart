@@ -338,4 +338,47 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get mediaStudio => 'Studio (opsional)';
+
+  @override
+  String get calendar => 'Kalender';
+
+  @override
+  String get calendarEmptyMonth => 'Tidak ada acara bulan ini';
+
+  @override
+  String get calendarEventTitle => 'Judul';
+
+  @override
+  String get calendarAllDay => 'Seharian';
+
+  @override
+  String get calendarTime => 'Jam';
+
+  @override
+  String get calendarYearly => 'Ulang tiap tahun';
+
+  @override
+  String get calendarReminder => 'Pengingat';
+
+  @override
+  String get calendarAllDayReminderHint =>
+      'Untuk acara seharian, pengingat dihitung dari jam 08.00.';
+
+  @override
+  String get reminderNone => 'Tidak ada';
+
+  @override
+  String get reminderAtStart => 'Saat acara mulai';
+
+  @override
+  String get reminder10m => '10 menit sebelumnya';
+
+  @override
+  String get reminder1h => '1 jam sebelumnya';
+
+  @override
+  String get reminder1d => '1 hari sebelumnya';
+
+  @override
+  String get calendarHoliday => 'Libur nasional';
 }

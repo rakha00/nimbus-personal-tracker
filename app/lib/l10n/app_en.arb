@@ -141,5 +141,19 @@
   "mediaProgress": "Ongoing",
   "mediaStart": "Start",
   "mediaCreator": "Creator (optional)",
-  "mediaStudio": "Studio (optional)"
+  "mediaStudio": "Studio (optional)",
+  "calendar": "Calendar",
+  "calendarEmptyMonth": "No events this month",
+  "calendarEventTitle": "Title",
+  "calendarAllDay": "All day",
+  "calendarTime": "Time",
+  "calendarYearly": "Repeat every year",
+  "calendarReminder": "Reminder",
+  "calendarAllDayReminderHint": "For all-day events, reminders count from 08:00.",
+  "reminderNone": "None",
+  "reminderAtStart": "When it starts",
+  "reminder10m": "10 minutes before",
+  "reminder1h": "1 hour before",
+  "reminder1d": "1 day before",
+  "calendarHoliday": "Public holiday"
 }

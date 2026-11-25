@@ -739,6 +739,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Studio (optional)'**
   String get mediaStudio;
+
+  /// No description provided for @calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get calendar;
+
+  /// No description provided for @calendarEmptyMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'No events this month'**
+  String get calendarEmptyMonth;
+
+  /// No description provided for @calendarEventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get calendarEventTitle;
+
+  /// No description provided for @calendarAllDay.
+  ///
+  /// In en, this message translates to:
+  /// **'All day'**
+  String get calendarAllDay;
+
+  /// No description provided for @calendarTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get calendarTime;
+
+  /// No description provided for @calendarYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat every year'**
+  String get calendarYearly;
+
+  /// No description provided for @calendarReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get calendarReminder;
+
+  /// No description provided for @calendarAllDayReminderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For all-day events, reminders count from 08:00.'**
+  String get calendarAllDayReminderHint;
+
+  /// No description provided for @reminderNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get reminderNone;
+
+  /// No description provided for @reminderAtStart.
+  ///
+  /// In en, this message translates to:
+  /// **'When it starts'**
+  String get reminderAtStart;
+
+  /// No description provided for @reminder10m.
+  ///
+  /// In en, this message translates to:
+  /// **'10 minutes before'**
+  String get reminder10m;
+
+  /// No description provided for @reminder1h.
+  ///
+  /// In en, this message translates to:
+  /// **'1 hour before'**
+  String get reminder1h;
+
+  /// No description provided for @reminder1d.
+  ///
+  /// In en, this message translates to:
+  /// **'1 day before'**
+  String get reminder1d;
+
+  /// No description provided for @calendarHoliday.
+  ///
+  /// In en, this message translates to:
+  /// **'Public holiday'**
+  String get calendarHoliday;
 }
 
 class _AppLocalizationsDelegate
