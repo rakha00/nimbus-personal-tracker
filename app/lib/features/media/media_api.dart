@@ -10,14 +10,16 @@ typedef Hit = Map<String, dynamic>;
 
 int _year(Object? date) => int.tryParse('${date ?? ''}'.padRight(4).substring(0, 4)) ?? 0;
 
-List<Hit> parseTmdb(Map<String, dynamic> json) => [
+/// Films, series and anime all come from TMDB; series and anime are TV shows (`name` / `first_air_date`,
+/// their own id space), and anime keeps only animated shows (genre 16).
+List<Hit> parseTmdb(Map<String, dynamic> json, [String type = 'film']) => [
       for (final m in (json['results'] as List? ?? []).cast<Map<String, dynamic>>())
-        {
-          'type': 'film',
-          'external_id': 'tmdb:${m['id']}',
-          'title': m['title'] ?? '',
+        if (type != 'anime' || (m['genre_ids'] as List? ?? []).contains(16)) {
+          'type': type,
+          'external_id': '${type == 'film' ? 'tmdb' : 'tmdbtv'}:${m['id']}',
+          'title': m['title'] ?? m['name'] ?? '',
           'creator': '',
-          'year': _year(m['release_date']),
+          'year': _year(m['release_date'] ?? m['first_air_date']),
           'cover_url': m['poster_path'] == null ? '' : 'https://image.tmdb.org/t/p/w342${m['poster_path']}',
           'synopsis': m['overview'] ?? '',
         },
@@ -53,21 +55,30 @@ Future<Map<String, dynamic>> _tmdb(String path, Map<String, String> query) {
 }
 
 /// [lang] is the app's language code ("id" or "en").
-Future<List<Hit>> searchMedia(String type, String query, String lang) async => type == 'book'
-    ? parseBooks(await _get(Uri.https('www.googleapis.com', '/books/v1/volumes', {'q': query, 'maxResults': '20'})))
-    : parseTmdb(await _tmdb('/search/movie', {'query': query, 'language': lang == 'id' ? 'id-ID' : 'en-US'}));
+Future<List<Hit>> searchMedia(String type, String query, String lang) async => switch (type) {
+      'book' => parseBooks(await _get(Uri.https('www.googleapis.com', '/books/v1/volumes', {'q': query, 'maxResults': '20'}))),
+      _ => parseTmdb(
+          await _tmdb(type == 'film' ? '/search/movie' : '/search/tv', {'query': query, 'language': lang == 'id' ? 'id-ID' : 'en-US'}),
+          type),
+    };
 
-/// The film's director (and an English synopsis when there's none in Indonesian) need extra calls,
-/// so they're fetched only for the picked film. Books are already complete.
+/// A film's director, a series' creators, an anime's studios (and an English synopsis when there's none
+/// in Indonesian) need extra calls, so they're fetched only for the picked hit. Books are already complete.
 Future<Hit> completeHit(Hit hit) async {
+  final id = (hit['external_id'] as String).split(':').last;
+  var synopsis = hit['synopsis'] as String;
+  if (hit['type'] case 'series' || 'anime') {
+    final tv = await _tmdb('/tv/$id', {'language': 'en-US'});
+    if (synopsis.isEmpty) synopsis = tv['overview'] ?? '';
+    final people = tv[hit['type'] == 'anime' ? 'production_companies' : 'created_by'] as List? ?? [];
+    return {...hit, 'creator': [for (final c in people) c['name']].join(', '), 'synopsis': synopsis};
+  }
   if (hit['type'] != 'film') return hit;
-  final id = (hit['external_id'] as String).substring('tmdb:'.length);
   final credits = await _tmdb('/movie/$id/credits', {});
   final directors = [
     for (final c in (credits['crew'] as List? ?? []).cast<Map<String, dynamic>>())
       if (c['job'] == 'Director') c['name'],
   ];
-  var synopsis = hit['synopsis'] as String;
   if (synopsis.isEmpty) synopsis = (await _tmdb('/movie/$id', {'language': 'en-US'}))['overview'] ?? '';
   return {...hit, 'creator': directors.join(', '), 'synopsis': synopsis};
 }

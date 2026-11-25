@@ -298,8 +298,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get mediaMarkDone => 'Tandai selesai';
 
   @override
-  String get mediaEmptyWishlist =>
-      'Belum ada film atau buku yang ingin ditonton/dibaca';
+  String get mediaEmptyWishlist => 'Belum ada yang ingin ditonton/dibaca';
 
   @override
   String get mediaEmptyDone => 'Belum ada yang selesai ditonton/dibaca';
@@ -320,5 +319,23 @@ class AppLocalizationsId extends AppLocalizations {
   String get mediaSynopsis => 'Sinopsis';
 
   @override
-  String get mediaFilterHint => 'Cari judul, sutradara, atau penulis';
+  String get mediaFilterHint => 'Cari judul atau pembuat';
+
+  @override
+  String get mediaSeries => 'Serial';
+
+  @override
+  String get mediaAnime => 'Anime';
+
+  @override
+  String get mediaProgress => 'Sedang';
+
+  @override
+  String get mediaStart => 'Mulai';
+
+  @override
+  String get mediaCreator => 'Pembuat (opsional)';
+
+  @override
+  String get mediaStudio => 'Studio (opsional)';
 }

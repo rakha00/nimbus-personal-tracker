@@ -21,6 +21,20 @@ void main() {
     expect([hits[1]['year'], hits[1]['cover_url'], hits[1]['synopsis']], [0, '', '']);
   });
 
+  test('TMDB TV hits map to series, and to anime only when animated', () {
+    final json = {
+      'results': [
+        {'id': 42, 'name': 'Contoh Serial', 'first_air_date': '2021-01-01', 'poster_path': null, 'genre_ids': [18]},
+        {'id': 9, 'name': 'Contoh Anime', 'first_air_date': '2023-09-29', 'poster_path': null, 'genre_ids': [16, 10759]},
+      ],
+    };
+    final tv = parseTmdb(json, 'series');
+    expect([tv[0]['type'], tv[0]['external_id'], tv[0]['title'], tv[0]['year']], ['series', 'tmdbtv:42', 'Contoh Serial', 2021]);
+    final anime = parseTmdb(json, 'anime');
+    expect(anime, hasLength(1));
+    expect([anime[0]['type'], anime[0]['external_id'], anime[0]['year']], ['anime', 'tmdbtv:9', 2023]);
+  });
+
   test('Google Books hit maps authors, year and an https cover', () {
     final hits = parseBooks({
       'items': [

@@ -298,7 +298,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mediaMarkDone => 'Mark as done';
 
   @override
-  String get mediaEmptyWishlist => 'No films or books on your list yet';
+  String get mediaEmptyWishlist => 'Nothing on your list yet';
 
   @override
   String get mediaEmptyDone => 'Nothing watched or read yet';
@@ -319,5 +319,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mediaSynopsis => 'Synopsis';
 
   @override
-  String get mediaFilterHint => 'Search title, director or author';
+  String get mediaFilterHint => 'Search title or creator';
+
+  @override
+  String get mediaSeries => 'Series';
+
+  @override
+  String get mediaAnime => 'Anime';
+
+  @override
+  String get mediaProgress => 'Ongoing';
+
+  @override
+  String get mediaStart => 'Start';
+
+  @override
+  String get mediaCreator => 'Creator (optional)';
+
+  @override
+  String get mediaStudio => 'Studio (optional)';
 }

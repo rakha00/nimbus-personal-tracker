@@ -659,7 +659,7 @@ abstract class AppLocalizations {
   /// No description provided for @mediaEmptyWishlist.
   ///
   /// In en, this message translates to:
-  /// **'No films or books on your list yet'**
+  /// **'Nothing on your list yet'**
   String get mediaEmptyWishlist;
 
   /// No description provided for @mediaEmptyDone.
@@ -701,8 +701,44 @@ abstract class AppLocalizations {
   /// No description provided for @mediaFilterHint.
   ///
   /// In en, this message translates to:
-  /// **'Search title, director or author'**
+  /// **'Search title or creator'**
   String get mediaFilterHint;
+
+  /// No description provided for @mediaSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get mediaSeries;
+
+  /// No description provided for @mediaAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime'**
+  String get mediaAnime;
+
+  /// No description provided for @mediaProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get mediaProgress;
+
+  /// No description provided for @mediaStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get mediaStart;
+
+  /// No description provided for @mediaCreator.
+  ///
+  /// In en, this message translates to:
+  /// **'Creator (optional)'**
+  String get mediaCreator;
+
+  /// No description provided for @mediaStudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Studio (optional)'**
+  String get mediaStudio;
 }
 
 class _AppLocalizationsDelegate

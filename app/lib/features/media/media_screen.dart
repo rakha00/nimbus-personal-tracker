@@ -10,7 +10,28 @@ import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 import 'media_api.dart';
 
-/// Films and books: a wishlist, and a log of what's been watched or read.
+IconData typeIcon(String type) => switch (type) {
+      'book' => Icons.menu_book_outlined,
+      'series' => Icons.tv_outlined,
+      'anime' => Icons.animation,
+      _ => Icons.movie_outlined,
+    };
+
+/// Film / Serial / Anime / Buku as (id, label) pairs.
+List<(String, String)> mediaTypes(AppLocalizations t) =>
+    [('film', t.mediaFilm), ('series', t.mediaSeries), ('anime', t.mediaAnime), ('book', t.mediaBook)];
+
+List<ButtonSegment<String>> typeSegments(AppLocalizations t) =>
+    [for (final (id, label) in mediaTypes(t)) ButtonSegment(value: id, label: Text(label))];
+
+/// Films are watched in one sitting, so they skip "in progress".
+List<ButtonSegment<String>> statusSegments(AppLocalizations t, String type) => [
+      ButtonSegment(value: 'wishlist', label: Text(t.mediaWishlist)),
+      if (type != 'film') ButtonSegment(value: 'progress', label: Text(t.mediaProgress)),
+      ButtonSegment(value: 'done', label: Text(t.mediaDone)),
+    ];
+
+/// Films, series, anime and books: a wishlist, what's in progress, and a log of what's done.
 class MediaScreen extends StatefulWidget {
   const MediaScreen({super.key});
 
@@ -42,6 +63,15 @@ class _MediaScreenState extends State<MediaScreen> {
         status: finish ? 'done' : item.getStringValue('status'),
       ));
 
+  Future<void> start(RecordModel item) async {
+    try {
+      await pb.collection('media_items').update(item.id, body: {'status': 'progress'});
+      reload();
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).saveFailed)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
@@ -71,14 +101,19 @@ class _MediaScreenState extends State<MediaScreen> {
           final all = snap.data;
           if (all == null) return const Center(child: CircularProgressIndicator());
           final q = filter.text.trim().toLowerCase();
+          // The first tab holds the wishlist and what's in progress; in-progress items go on top.
           final list = all
               .where((e) =>
-                  e.getStringValue('status') == status &&
+                  (e.getStringValue('status') == 'done') == (status == 'done') &&
                   (type.isEmpty || e.getStringValue('type') == type) &&
                   (q.isEmpty ||
                       e.getStringValue('title').toLowerCase().contains(q) ||
                       e.getStringValue('creator').toLowerCase().contains(q)))
               .toList();
+          final ongoing = list.where((e) => e.getStringValue('status') == 'progress').toList();
+          list
+            ..removeWhere(ongoing.contains)
+            ..insertAll(0, ongoing);
           return RefreshIndicator(
             onRefresh: () async {
               reload();
@@ -95,10 +130,20 @@ class _MediaScreenState extends State<MediaScreen> {
                 onSelectionChanged: (s) => setState(() => status = s.first),
               ),
               const SizedBox(height: 12),
-              Wrap(spacing: 8, children: [
-                for (final (id, label) in [('', t.all), ('film', t.mediaFilm), ('book', t.mediaBook)])
-                  ChoiceChip(label: Text(label), selected: type == id, onSelected: (_) => setState(() => type = id)),
-              ]),
+              // One row; scrolls sideways on screens too narrow for all five.
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(spacing: 6, children: [
+                  for (final (id, label) in [('', t.all), ...mediaTypes(t)])
+                    ChoiceChip(
+                      label: Text(label),
+                      selected: type == id,
+                      onSelected: (_) => setState(() => type = id),
+                      visualDensity: VisualDensity.compact,
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                    ),
+                ]),
+              ),
               const SizedBox(height: 12),
               TextField(
                 controller: filter,
@@ -131,13 +176,19 @@ class _MediaScreenState extends State<MediaScreen> {
                       _MediaRow(
                         data: e.data,
                         onTap: () => edit(e),
-                        trailing: e.getStringValue('status') == 'done'
-                            ? (e.getIntValue('rating') > 0 ? Stars(e.getIntValue('rating'), size: 14) : null)
-                            : IconButton(
-                                onPressed: () => edit(e, finish: true),
-                                icon: const Icon(Icons.check_circle_outline),
-                                tooltip: t.mediaMarkDone,
-                              ),
+                        trailing: switch (e.getStringValue('status')) {
+                          'done' => e.getIntValue('rating') > 0 ? Stars(e.getIntValue('rating'), size: 14) : null,
+                          'wishlist' when e.getStringValue('type') != 'film' => IconButton(
+                              onPressed: () => start(e),
+                              icon: const Icon(Icons.play_circle_outline),
+                              tooltip: t.mediaStart,
+                            ),
+                          _ => IconButton(
+                              onPressed: () => edit(e, finish: true),
+                              icon: const Icon(Icons.check_circle_outline),
+                              tooltip: t.mediaMarkDone,
+                            ),
+                        },
                       ),
                     ],
                   ]),
@@ -162,6 +213,7 @@ class _MediaRow extends StatelessWidget {
     final year = data['year'] as num? ?? 0;
     final finished = data['status'] == 'done' ? data['finished_on'] as String? ?? '' : '';
     final sub = [
+      if (data['status'] == 'progress') AppLocalizations.of(context).mediaProgress,
       data['creator'] as String? ?? '',
       if (year > 0) '$year',
       if (finished.isNotEmpty) DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(fromPbDate(finished)),
@@ -198,7 +250,7 @@ class Cover extends StatelessWidget {
     final empty = Container(
       color: l.raised,
       alignment: Alignment.center,
-      child: Icon(type == 'book' ? Icons.menu_book_outlined : Icons.movie_outlined, size: width * .45),
+      child: Icon(typeIcon(type), size: width * .45),
     );
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
@@ -295,10 +347,7 @@ class _MediaSearchState extends State<MediaSearch> {
       body: ListView(padding: const EdgeInsets.all(16), children: [
         SegmentedButton<String>(
           showSelectedIcon: false,
-          segments: [
-            ButtonSegment(value: 'film', label: Text(t.mediaFilm), icon: const Icon(Icons.movie_outlined)),
-            ButtonSegment(value: 'book', label: Text(t.mediaBook), icon: const Icon(Icons.menu_book_outlined)),
-          ],
+          segments: typeSegments(t),
           selected: {type},
           onSelectionChanged: (s) {
             type = s.first;
@@ -354,7 +403,7 @@ class _MediaSearchState extends State<MediaSearch> {
                           null => null,
                           final s => Padding(
                               padding: const EdgeInsets.only(left: 8, right: 8),
-                              child: Text(s == 'done' ? t.mediaDone : t.mediaWishlist, style: small),
+                              child: Text(switch (s) { 'done' => t.mediaDone, 'progress' => t.mediaProgress, _ => t.mediaWishlist }, style: small),
                             ),
                         },
                       ),
@@ -487,17 +536,17 @@ class _MediaFormState extends State<MediaForm> {
         ] else ...[
           SegmentedButton<String>(
             showSelectedIcon: false,
-            segments: [
-              ButtonSegment(value: 'film', label: Text(t.mediaFilm), icon: const Icon(Icons.movie_outlined)),
-              ButtonSegment(value: 'book', label: Text(t.mediaBook), icon: const Icon(Icons.menu_book_outlined)),
-            ],
+            segments: typeSegments(t),
             selected: {type},
-            onSelectionChanged: (s) => setState(() => type = s.first),
+            onSelectionChanged: (s) => setState(() {
+              type = s.first;
+              if (type == 'film' && status == 'progress') status = 'wishlist';
+            }),
           ),
           const SizedBox(height: 16),
           Labeled(t.mediaTitle, TextField(controller: title, autofocus: title.text.isEmpty, textCapitalization: TextCapitalization.sentences)),
           const SizedBox(height: 16),
-          Labeled(type == 'book' ? t.mediaAuthor : t.mediaDirector,
+          Labeled(switch (type) { 'book' => t.mediaAuthor, 'series' => t.mediaCreator, 'anime' => t.mediaStudio, _ => t.mediaDirector },
               TextField(controller: creator, textCapitalization: TextCapitalization.words)),
           const SizedBox(height: 16),
           Labeled(t.mediaYear, TextField(
@@ -510,10 +559,7 @@ class _MediaFormState extends State<MediaForm> {
         const SizedBox(height: 24),
         SegmentedButton<String>(
           showSelectedIcon: false,
-          segments: [
-            ButtonSegment(value: 'wishlist', label: Text(t.mediaWishlist)),
-            ButtonSegment(value: 'done', label: Text(t.mediaDone)),
-          ],
+          segments: statusSegments(t, type),
           selected: {status},
           onSelectionChanged: (s) => setState(() => status = s.first),
         ),

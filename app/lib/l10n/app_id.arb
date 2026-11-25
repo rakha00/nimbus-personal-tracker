@@ -93,12 +93,18 @@
   "mediaFinishedOn": "Tanggal selesai",
   "mediaRating": "Rating (opsional)",
   "mediaMarkDone": "Tandai selesai",
-  "mediaEmptyWishlist": "Belum ada film atau buku yang ingin ditonton/dibaca",
+  "mediaEmptyWishlist": "Belum ada yang ingin ditonton/dibaca",
   "mediaEmptyDone": "Belum ada yang selesai ditonton/dibaca",
   "mediaSearchHint": "Ketik judul",
   "mediaSearchFailed": "Gagal mencari. Periksa koneksi internet.",
   "mediaNoResults": "Tidak ditemukan",
   "mediaManual": "Isi manual",
   "mediaSynopsis": "Sinopsis",
-  "mediaFilterHint": "Cari judul, sutradara, atau penulis"
+  "mediaFilterHint": "Cari judul atau pembuat",
+  "mediaSeries": "Serial",
+  "mediaAnime": "Anime",
+  "mediaProgress": "Sedang",
+  "mediaStart": "Mulai",
+  "mediaCreator": "Pembuat (opsional)",
+  "mediaStudio": "Studio (opsional)"
 }

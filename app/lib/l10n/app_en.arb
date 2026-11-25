@@ -128,12 +128,18 @@
   "mediaFinishedOn": "Date finished",
   "mediaRating": "Rating (optional)",
   "mediaMarkDone": "Mark as done",
-  "mediaEmptyWishlist": "No films or books on your list yet",
+  "mediaEmptyWishlist": "Nothing on your list yet",
   "mediaEmptyDone": "Nothing watched or read yet",
   "mediaSearchHint": "Type a title",
   "mediaSearchFailed": "Search failed. Check your connection.",
   "mediaNoResults": "Nothing found",
   "mediaManual": "Enter manually",
   "mediaSynopsis": "Synopsis",
-  "mediaFilterHint": "Search title, director or author"
+  "mediaFilterHint": "Search title or creator",
+  "mediaSeries": "Series",
+  "mediaAnime": "Anime",
+  "mediaProgress": "Ongoing",
+  "mediaStart": "Start",
+  "mediaCreator": "Creator (optional)",
+  "mediaStudio": "Studio (optional)"
 }
