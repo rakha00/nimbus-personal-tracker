@@ -21,7 +21,8 @@ class AssistantButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => IconButton(
-        icon: const Icon(Icons.auto_awesome_outlined),
+        // Claude Spark from the Anthropic press kit; ImageIcon takes the app bar's icon color.
+        icon: const ImageIcon(AssetImage('assets/claude_spark.png'), size: 20),
         tooltip: AppLocalizations.of(context).assistant,
         onPressed: () async {
           var saved = false;
