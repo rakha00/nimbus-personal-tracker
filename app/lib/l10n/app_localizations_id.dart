@@ -381,4 +381,35 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get calendarHoliday => 'Libur nasional';
+
+  @override
+  String get assistant => 'Asisten';
+
+  @override
+  String get assistantRecord => 'Catat';
+
+  @override
+  String get assistantAsk => 'Tanya';
+
+  @override
+  String get assistantRecordHint => 'mis. makan siang 25rb pakai cash';
+
+  @override
+  String get assistantAskHint => 'mis. pengeluaran bulan ini berapa?';
+
+  @override
+  String get assistantSend => 'Kirim';
+
+  @override
+  String get assistantDraftsHint => 'Ketuk draf untuk memeriksa lalu simpan.';
+
+  @override
+  String get assistantRateLimit =>
+      'Batas 30 permintaan per jam tercapai. Coba lagi nanti.';
+
+  @override
+  String get assistantTimeout => 'Asisten terlalu lama menjawab. Coba lagi.';
+
+  @override
+  String get assistantFailed => 'Asisten tidak bisa menjawab. Coba lagi.';
 }

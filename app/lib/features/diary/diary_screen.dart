@@ -5,6 +5,7 @@ import 'package:pocketbase/pocketbase.dart';
 import '../../core/backend.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
+import '../assistant/assistant_sheet.dart';
 
 /// One entry per day. Today's card always sits on top, even before it's written.
 class DiaryScreen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     final locale = Localizations.localeOf(context).toString();
     final today = dayOnly(DateTime.now());
     return Scaffold(
-      appBar: AppBar(title: Text(t.diary)),
+      appBar: AppBar(title: Text(t.diary), actions: const [AssistantButton()]),
       body: FutureBuilder(
         future: entries,
         builder: (context, snap) {
@@ -138,16 +139,18 @@ class _EntryRow extends StatelessWidget {
 }
 
 class DiaryEditor extends StatefulWidget {
-  const DiaryEditor({super.key, required this.date, this.entry});
+  const DiaryEditor({super.key, required this.date, this.entry, this.append = ''});
   final DateTime date;
   final RecordModel? entry;
+  final String append; // text to add under the entry (an AI draft)
 
   @override
   State<DiaryEditor> createState() => _DiaryEditorState();
 }
 
 class _DiaryEditorState extends State<DiaryEditor> {
-  late final text = TextEditingController(text: widget.entry?.getStringValue('content') ?? '');
+  late final text = TextEditingController(
+      text: [widget.entry?.getStringValue('content') ?? '', widget.append].where((s) => s.isNotEmpty).join('\n'));
   bool busy = false;
 
   Future<void> save() async {

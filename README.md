@@ -17,6 +17,9 @@ toward a personal tracking app that an AI assistant can later read through MCP.
 - **Media log**: a wishlist of films and books, and a log of what's been watched or read, with
   date finished, a 1–5 rating and notes. Search fills in cover, year, director or author and
   synopsis from TMDB (films, needs `TMDB_KEY` in `config.json`) or Google Books.
+- **Assistant** (✦ in the app bar): *record* turns a sentence like "lunch 25k cash" into drafts
+  that open in the normal forms to check and save; *ask* answers questions about the data. It
+  runs Claude Code on the server with read-only access (see AI worker below).
 - **Device lock**: the app opens with the phone's own fingerprint or PIN and locks again after a
   minute in the background. There is no in-app login screen after the one-time setup.
 - **Light and dark theme**, Indonesian and English UI.

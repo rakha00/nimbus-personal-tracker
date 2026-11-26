@@ -5,6 +5,7 @@ import 'package:pocketbase/pocketbase.dart';
 import '../../core/backend.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
+import '../assistant/assistant_sheet.dart';
 import 'holidays.dart';
 import 'reminders.dart';
 
@@ -51,7 +52,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final l = Ledger.of(context);
     final small = Theme.of(context).textTheme.bodySmall;
     return Scaffold(
-      appBar: AppBar(title: Text(t.calendar)),
+      appBar: AppBar(title: Text(t.calendar), actions: const [AssistantButton()]),
       floatingActionButton: FloatingActionButton(onPressed: () => open(null), tooltip: t.add, child: const Icon(Icons.add)),
       body: FutureBuilder(
         future: events,
@@ -303,9 +304,10 @@ Future<DateTime?> _pickMonth(BuildContext context, DateTime current) {
 
 /// Add or edit one event; for an existing one it doubles as the detail page.
 class EventForm extends StatefulWidget {
-  const EventForm({super.key, this.event, required this.day});
+  const EventForm({super.key, this.event, required this.day, this.draft});
   final RecordModel? event; // null = new
   final DateTime day; // the picked day, for a new event
+  final Map<String, dynamic>? draft; // an AI suggestion for a new one: date YYYY-MM-DD, time HH:MM
 
   @override
   State<EventForm> createState() => _EventFormState();
@@ -313,14 +315,17 @@ class EventForm extends StatefulWidget {
 
 class _EventFormState extends State<EventForm> {
   late final e = widget.event;
-  late final DateTime start = e == null ? widget.day.add(const Duration(hours: 9)) : eventStart(e!);
-  late final title = TextEditingController(text: e?.getStringValue('title') ?? '');
-  late final note = TextEditingController(text: e?.getStringValue('note') ?? '');
+  late final dr = widget.draft ?? const {};
+  late final DateTime start = e != null
+      ? eventStart(e!)
+      : DateTime.tryParse('${dr['date']} ${dr['time'] ?? '09:00'}') ?? widget.day.add(const Duration(hours: 9));
+  late final title = TextEditingController(text: e?.getStringValue('title') ?? dr['title'] as String? ?? '');
+  late final note = TextEditingController(text: e?.getStringValue('note') ?? dr['note'] as String? ?? '');
   late DateTime date = dayOnly(start);
   late TimeOfDay time = TimeOfDay.fromDateTime(start);
-  late bool allDay = e?.getBoolValue('all_day') ?? false;
-  late bool yearly = e?.getBoolValue('yearly') ?? false;
-  late String reminder = e?.getStringValue('reminder') ?? '';
+  late bool allDay = e?.getBoolValue('all_day') ?? (widget.draft != null && dr['time'] == null);
+  late bool yearly = e?.getBoolValue('yearly') ?? dr['yearly'] as bool? ?? false;
+  late String reminder = e?.getStringValue('reminder') ?? dr['reminder'] as String? ?? '';
   bool busy = false;
   String? error, titleError;
 

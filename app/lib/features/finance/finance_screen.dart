@@ -5,6 +5,7 @@ import 'package:pocketbase/pocketbase.dart';
 import '../../core/backend.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
+import '../assistant/assistant_sheet.dart';
 import 'debts_screen.dart';
 import 'finance_data.dart';
 import 'transaction_form.dart';
@@ -59,7 +60,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
       builder: (context, snap) {
         final d = snap.data;
         return Scaffold(
-          appBar: AppBar(title: Text(t.finance)),
+          appBar: AppBar(title: Text(t.finance), actions: const [AssistantButton()]),
           floatingActionButton: d == null
               ? null
               : FloatingActionButton(onPressed: () => openForm(d), tooltip: t.add, child: const Icon(Icons.add)),

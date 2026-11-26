@@ -823,6 +823,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Public holiday'**
   String get calendarHoliday;
+
+  /// No description provided for @assistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant'**
+  String get assistant;
+
+  /// No description provided for @assistantRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Record'**
+  String get assistantRecord;
+
+  /// No description provided for @assistantAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask'**
+  String get assistantAsk;
+
+  /// No description provided for @assistantRecordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. lunch 25k, paid cash'**
+  String get assistantRecordHint;
+
+  /// No description provided for @assistantAskHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. how much did I spend this month?'**
+  String get assistantAskHint;
+
+  /// No description provided for @assistantSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get assistantSend;
+
+  /// No description provided for @assistantDraftsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a draft to check it, then save.'**
+  String get assistantDraftsHint;
+
+  /// No description provided for @assistantRateLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit of 30 requests an hour reached. Try again later.'**
+  String get assistantRateLimit;
+
+  /// No description provided for @assistantTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant took too long. Try again.'**
+  String get assistantTimeout;
+
+  /// No description provided for @assistantFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The assistant couldn\'t answer. Try again.'**
+  String get assistantFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/backend.dart';
 import 'core/theme.dart';
+import 'features/assistant/assistant_sheet.dart';
 import 'features/auth/lock_gate.dart';
 import 'features/auth/setup_screen.dart';
 import 'features/calendar/calendar_screen.dart';
@@ -78,13 +79,17 @@ class _HomeShellState extends State<HomeShell> {
     final t = AppLocalizations.of(context);
     final l = Ledger.of(context);
     return Scaffold(
-      body: IndexedStack(index: tab, children: [
-        const FinanceScreen(),
-        const DiaryScreen(),
-        const MediaScreen(),
-        const CalendarScreen(),
-        SettingsScreen(onSignOut: widget.onSignOut),
-      ]),
+      // A new key after the assistant saved something rebuilds every tab, so each reloads its data.
+      body: ValueListenableBuilder(
+        valueListenable: assistantSaved,
+        builder: (context, version, _) => IndexedStack(key: ValueKey(version), index: tab, children: [
+          const FinanceScreen(),
+          const DiaryScreen(),
+          const MediaScreen(),
+          const CalendarScreen(),
+          SettingsScreen(onSignOut: widget.onSignOut),
+        ]),
+      ),
       bottomNavigationBar: DecoratedBox(
         decoration: BoxDecoration(border: Border(top: BorderSide(color: l.border))),
         child: NavigationBar(

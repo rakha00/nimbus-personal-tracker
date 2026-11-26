@@ -155,5 +155,15 @@
   "reminder10m": "10 minutes before",
   "reminder1h": "1 hour before",
   "reminder1d": "1 day before",
-  "calendarHoliday": "Public holiday"
+  "calendarHoliday": "Public holiday",
+  "assistant": "Assistant",
+  "assistantRecord": "Record",
+  "assistantAsk": "Ask",
+  "assistantRecordHint": "e.g. lunch 25k, paid cash",
+  "assistantAskHint": "e.g. how much did I spend this month?",
+  "assistantSend": "Send",
+  "assistantDraftsHint": "Tap a draft to check it, then save.",
+  "assistantRateLimit": "Limit of 30 requests an hour reached. Try again later.",
+  "assistantTimeout": "The assistant took too long. Try again.",
+  "assistantFailed": "The assistant couldn't answer. Try again."
 }

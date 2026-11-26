@@ -11,26 +11,38 @@ import 'finance_data.dart';
 const _debtTypes = ['lend', 'collect', 'borrow', 'repay'];
 
 /// Add or edit one transaction. The "debt" tab covers lend/collect/borrow/repay.
+/// Pops true once saved or deleted.
 class TransactionForm extends StatefulWidget {
-  const TransactionForm({super.key, required this.data, this.record});
+  const TransactionForm({super.key, required this.data, this.record, this.draft});
   final FinanceData data;
   final RecordModel? record;
+  final Map<String, dynamic>? draft; // an AI suggestion for a new one; names, not ids
 
   @override
   State<TransactionForm> createState() => _TransactionFormState();
 }
 
+/// Id of the record whose name matches, ignoring case; '' if none, so the user picks.
+String _idByName(Iterable<RecordModel> list, Object? name) =>
+    list.where((x) => x.getStringValue('name').toLowerCase() == '${name ?? ''}'.toLowerCase()).firstOrNull?.id ?? '';
+
 class _TransactionFormState extends State<TransactionForm> {
   late final r = widget.record;
-  late String type = r?.getStringValue('type') ?? 'expense';
-  late final amount = TextEditingController(text: r == null ? '' : '${r!.getIntValue('amount')}');
+  late final dr = widget.draft ?? const {};
+  late String type = r?.getStringValue('type') ?? dr['type'] as String? ?? 'expense';
+  late final amount = TextEditingController(text: r == null ? '${dr['amount'] ?? ''}' : '${r!.getIntValue('amount')}');
   late String account = r?.getStringValue('account') ??
-      (widget.data.accounts.isEmpty ? '' : widget.data.accounts.first.id);
-  late String toAccount = r?.getStringValue('to_account') ?? '';
-  late String category = r?.getStringValue('category') ?? '';
-  late String person = r?.getStringValue('person') ?? '';
-  late final note = TextEditingController(text: r?.getStringValue('note') ?? '');
-  late DateTime date = r == null ? dayOnly(DateTime.now()) : fromPbDate(r!.getStringValue('date'));
+      (widget.draft != null
+          ? _idByName(widget.data.accounts, dr['account'])
+          : widget.data.accounts.isEmpty ? '' : widget.data.accounts.first.id);
+  late String toAccount = r?.getStringValue('to_account') ?? _idByName(widget.data.accounts, dr['to_account']);
+  late String category = r?.getStringValue('category') ??
+      _idByName(widget.data.categories.where((c) => c.getStringValue('kind') == type), dr['category']);
+  late String person = r?.getStringValue('person') ?? dr['person'] as String? ?? '';
+  late final note = TextEditingController(text: r?.getStringValue('note') ?? dr['note'] as String? ?? '');
+  late DateTime date = r != null
+      ? fromPbDate(r!.getStringValue('date'))
+      : DateTime.tryParse('${dr['date']}') ?? dayOnly(DateTime.now());
   bool busy = false;
   String? error;
 
@@ -81,7 +93,7 @@ class _TransactionFormState extends State<TransactionForm> {
     try {
       await call();
       financeChanged();
-      if (mounted) Navigator.pop(context);
+      if (mounted) Navigator.pop(context, true);
     } catch (_) {
       if (mounted) setState(() => error = AppLocalizations.of(context).saveFailed);
     } finally {

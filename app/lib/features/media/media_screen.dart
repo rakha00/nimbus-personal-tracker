@@ -8,6 +8,7 @@ import 'package:pocketbase/pocketbase.dart';
 import '../../core/backend.dart';
 import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
+import '../assistant/assistant_sheet.dart';
 import 'media_api.dart';
 
 IconData typeIcon(String type) => switch (type) {
@@ -76,7 +77,7 @@ class _MediaScreenState extends State<MediaScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(t.mediaTab)),
+      appBar: AppBar(title: Text(t.mediaTab), actions: const [AssistantButton()]),
       floatingActionButton: FloatingActionButton(
         onPressed: () => open(MediaSearch(
           type: type.isEmpty ? 'film' : type,

@@ -120,5 +120,15 @@
   "reminder10m": "10 menit sebelumnya",
   "reminder1h": "1 jam sebelumnya",
   "reminder1d": "1 hari sebelumnya",
-  "calendarHoliday": "Libur nasional"
+  "calendarHoliday": "Libur nasional",
+  "assistant": "Asisten",
+  "assistantRecord": "Catat",
+  "assistantAsk": "Tanya",
+  "assistantRecordHint": "mis. makan siang 25rb pakai cash",
+  "assistantAskHint": "mis. pengeluaran bulan ini berapa?",
+  "assistantSend": "Kirim",
+  "assistantDraftsHint": "Ketuk draf untuk memeriksa lalu simpan.",
+  "assistantRateLimit": "Batas 30 permintaan per jam tercapai. Coba lagi nanti.",
+  "assistantTimeout": "Asisten terlalu lama menjawab. Coba lagi.",
+  "assistantFailed": "Asisten tidak bisa menjawab. Coba lagi."
 }

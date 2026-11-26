@@ -381,4 +381,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendarHoliday => 'Public holiday';
+
+  @override
+  String get assistant => 'Assistant';
+
+  @override
+  String get assistantRecord => 'Record';
+
+  @override
+  String get assistantAsk => 'Ask';
+
+  @override
+  String get assistantRecordHint => 'e.g. lunch 25k, paid cash';
+
+  @override
+  String get assistantAskHint => 'e.g. how much did I spend this month?';
+
+  @override
+  String get assistantSend => 'Send';
+
+  @override
+  String get assistantDraftsHint => 'Tap a draft to check it, then save.';
+
+  @override
+  String get assistantRateLimit =>
+      'Limit of 30 requests an hour reached. Try again later.';
+
+  @override
+  String get assistantTimeout => 'The assistant took too long. Try again.';
+
+  @override
+  String get assistantFailed => 'The assistant couldn\'t answer. Try again.';
 }
