@@ -872,6 +872,12 @@ abstract class AppLocalizations {
   /// **'Media item not found'**
   String get mediaNotFound;
 
+  /// No description provided for @eventNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Event not found'**
+  String get eventNotFound;
+
   /// No description provided for @assistantIncomplete.
   ///
   /// In en, this message translates to:

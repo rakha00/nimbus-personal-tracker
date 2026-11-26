@@ -55,7 +55,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
   String? answer, error;
   List<Map<String, dynamic>> drafts = [];
   FinanceData? finance; // loaded when there are transaction drafts, to map names and find records
-  List<RecordModel> media = []; // the media log, loaded when there are media drafts
+  List<RecordModel> media = [], events = []; // loaded when there are media / calendar drafts
   final outcome = <int, String>{}; // draft index → working | saved | rejected | failed
 
   Future<void> send() async {
@@ -83,6 +83,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
       final list = [for (final d in r.data['drafts'] as List? ?? []) Map<String, dynamic>.from(d as Map)];
       final f = list.any(_isTx) ? await loadFinance() : null;
       final m = list.any(_isMedia) ? await pb.collection('media_items').getFullList() : <RecordModel>[];
+      final e = list.any(_isEvent) ? await pb.collection('calendar_events').getFullList() : <RecordModel>[];
       if (!mounted) return;
       setState(() {
         if (r.getStringValue('status') == 'error') {
@@ -96,6 +97,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
           drafts = list;
           finance = f;
           media = m;
+          events = e;
         }
       });
     } on TimeoutException {
@@ -117,7 +119,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
     final d = drafts[i];
     final lang = Localizations.localeOf(context).languageCode;
     setState(() => outcome[i] = 'working'); // a spinner while it saves (media also fetches details)
-    final tx = pb.collection('transactions'), items = pb.collection('media_items');
+    final tx = pb.collection('transactions'), items = pb.collection('media_items'), cal = pb.collection('calendar_events');
     try {
       switch (d['module']) {
         case 'transaction_delete':
@@ -130,7 +132,11 @@ class _AssistantSheetState extends State<AssistantSheet> {
           await items.delete(d['id'] as String);
         case 'media_update':
           await items.update(d['id'] as String, body: mediaDraftBody(d, base: _base(d))!);
-        default:
+        case 'event':
+          await cal.create(body: {'owner': userId, ...eventDraftBody(d)!});
+        case 'event_update':
+          await cal.update(d['id'] as String, body: eventDraftBody(d, _base(d))!);
+        default: // a new media item
           // The draft only names the pick; cover, creator and synopsis come straight from the API.
           final ext = d['external_id'] as String? ?? '';
           final hit = ext.isEmpty ? null : await completeHit(await fetchHit(ext, d['media_type'] as String, lang));
@@ -144,7 +150,8 @@ class _AssistantSheetState extends State<AssistantSheet> {
   }
 
   /// The existing record a change or deletion points at.
-  RecordModel? _base(Map<String, dynamic> d) => (_isTx(d) ? finance?.txs ?? [] : media).where((r) => r.id == d['id']).firstOrNull;
+  RecordModel? _base(Map<String, dynamic> d) =>
+      (_isTx(d) ? finance?.txs ?? [] : _isMedia(d) ? media : events).where((r) => r.id == d['id']).firstOrNull;
 
   /// Opens the module's normal form filled with the draft; the user saves it there.
   Future<void> open(int i) async {
@@ -153,8 +160,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
     try {
       final Widget page = switch (d['module']) {
         'transaction' => TransactionForm(data: finance!, draft: d),
-        'diary' || 'diary_update' => await _diaryEditor(d, date),
-        _ => EventForm(day: date, draft: d),
+        _ => await _diaryEditor(d, date),
       };
       if (!mounted) return;
       final ok = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => page));
@@ -228,6 +234,14 @@ class _AssistantSheetState extends State<AssistantSheet> {
                     onApprove: () => approve(i),
                     onReject: () => _done(i, 'rejected'),
                   )
+                else if (_isEvent(d))
+                  _EventDraftTile(
+                    draft: d,
+                    base: _base(d),
+                    outcome: outcome[i],
+                    onApprove: () => approve(i),
+                    onReject: () => _done(i, 'rejected'),
+                  )
                 else
                   _DraftTile(draft: d, saved: outcome[i] == 'saved', onTap: () => open(i)),
               ],
@@ -241,6 +255,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
 
 bool _isTx(Map<String, dynamic> d) => '${d['module']}'.startsWith('transaction');
 bool _isMedia(Map<String, dynamic> d) => '${d['module']}'.startsWith('media');
+bool _isEvent(Map<String, dynamic> d) => '${d['module']}'.startsWith('event');
 
 String _txType(AppLocalizations t, Object? type) => switch (type) {
       'income' => t.income,
@@ -443,7 +458,57 @@ class _MediaDraftTile extends StatelessWidget {
   }
 }
 
-/// A diary or calendar draft: tapping it opens the normal form.
+/// A calendar event to add or change (the assistant can't delete events). A change shows the
+/// event as it will be, with its previous values from the database.
+class _EventDraftTile extends StatelessWidget {
+  const _EventDraftTile({required this.draft, required this.base, required this.outcome, required this.onApprove, required this.onReject});
+  final Map<String, dynamic> draft;
+  final RecordModel? base;
+  final String? outcome;
+  final VoidCallback onApprove, onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final isNew = draft['module'] == 'event';
+    final missing = !isNew && base == null;
+    final body = missing ? null : eventDraftBody(draft, base);
+    // A saved-shape event → "Servis motor" and "5 Dec · 09:30 · Yearly · 1 hour before · note".
+    (String, String) describe(Map<String, dynamic> x) {
+      final start = DateTime.parse('${x['starts_at']}').toLocal();
+      return (
+        '${x['title'] ?? ''}',
+        [
+          _day(context, start),
+          x['all_day'] == true ? t.calendarAllDay : DateFormat.Hm().format(start),
+          if (x['yearly'] == true) t.calendarYearly,
+          switch (x['reminder']) {
+            'at_start' => t.reminderAtStart,
+            '10m' => t.reminder10m,
+            '1h' => t.reminder1h,
+            '1d' => t.reminder1d,
+            _ => '',
+          },
+          '${x['note'] ?? ''}',
+        ].where((s) => s.isNotEmpty).join(' · '),
+      );
+    }
+
+    final (title, line) = body == null ? (missing ? t.eventNotFound : '', '') : describe(body);
+    final before = !isNew && base != null ? describe(base!.data) : null;
+    return _ApprovalTile(
+      leading: _actionIcon(context, draft['module'], Icons.calendar_month_outlined),
+      title: title,
+      line: line,
+      before: before == null ? null : '${before.$1} · ${before.$2}',
+      outcome: outcome,
+      onReject: onReject,
+      onApprove: body == null ? null : onApprove,
+    );
+  }
+}
+
+/// A diary draft: tapping it opens the diary editor.
 class _DraftTile extends StatelessWidget {
   const _DraftTile({required this.draft, required this.saved, required this.onTap});
   final Map<String, dynamic> draft;
@@ -454,16 +519,12 @@ class _DraftTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final d = draft;
-    final day = _day(context, d['date'] ?? d['finished_on']);
-    final (icon, title, parts) = switch (d['module']) {
-      'diary' => (Icons.book_outlined, '${t.diary} · $day', [d['text']]),
-      'diary_update' => (Icons.edit_note, '${t.diary} · $day', [d['content']]),
-      _ => (Icons.calendar_month_outlined, '${d['title'] ?? ''}', [day, d['time']]),
-    };
+    final day = _day(context, d['date']);
+    final update = d['module'] == 'diary_update';
     return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(parts.whereType<String>().where((s) => s.isNotEmpty).join(' · '), maxLines: 2, overflow: TextOverflow.ellipsis),
+      leading: Icon(update ? Icons.edit_note : Icons.book_outlined),
+      title: Text('${t.diary} · $day'),
+      subtitle: Text('${(update ? d['content'] : d['text']) ?? ''}', maxLines: 2, overflow: TextOverflow.ellipsis),
       trailing: Icon(saved ? Icons.check_circle : Icons.chevron_right),
       onTap: saved ? null : onTap,
     );

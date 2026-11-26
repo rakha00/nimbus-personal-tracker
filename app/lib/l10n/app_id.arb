@@ -129,6 +129,7 @@
   "assistantBefore": "Sebelumnya",
   "assistantNotFound": "Transaksi tidak ditemukan",
   "mediaNotFound": "Item media tidak ditemukan",
+  "eventNotFound": "Acara tidak ditemukan",
   "assistantIncomplete": "Belum lengkap",
   "assistantComplete": "Lengkapi",
   "assistantSaved": "Tersimpan",

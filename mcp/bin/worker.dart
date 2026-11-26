@@ -167,6 +167,15 @@ only the id. Moving an item out of done clears its finish date and rating by its
 mention them. If more than one item could be meant, make no draft and ask which one. Asked to change
 or delete something that isn't in the log: make no draft (never add it as new) and say so.
 
+To change a calendar event (move its date or time, rename it, make it all-day, change its reminder
+or note), find it with the events tool (query by title words over a wide enough range, e.g. a year
+around today) and use its id exactly: an event_update holds the id and only what changes. Moving
+the time keeps the date and vice versa; a time makes it a timed event, all_day true removes the
+time. For a yearly event the date means its day and month. reminder "none" removes the reminder.
+If more than one event could be meant, make no draft and ask which one; asked to change an event
+that doesn't exist, make no draft and say so (never add it as new). Never delete an event: if
+asked, make no draft and say an event can only be deleted in the app.
+
 To change what a diary entry already says (fix, rewrite, reword or remove a line), read that
 day with the diary tool first, then give a diary_update draft with the whole new text of the
 entry: apply only what the user asked and keep everything else as it was. Use the diary draft
@@ -188,6 +197,15 @@ Map<String, Object> _draft(String module, Map<String, Object> props, List<String
       'required': ['module', ...required],
       'additionalProperties': false,
     };
+
+const _eventFields = {
+  'title': _str,
+  'date': _date,
+  'time': {'type': 'string', 'description': 'HH:MM in WIB; leave out for an all-day event'},
+  'yearly': {'type': 'boolean'},
+  'reminder': {'type': 'string', 'enum': ['none', 'at_start', '10m', '1h', '1d']},
+  'note': _str,
+};
 
 const _mediaLog = {
   'status': {'type': 'string', 'enum': ['wishlist', 'progress', 'done']},
@@ -232,14 +250,9 @@ final outputSchema = {
           }, ['media_type', 'title', 'status']),
           _draft('media_update', {'id': _str, ..._mediaLog}, ['id']),
           _draft('media_delete', {'id': _str}, ['id']),
-          _draft('event', {
-            'title': _str,
-            'date': _date,
-            'time': {'type': 'string', 'description': 'HH:MM in WIB; leave out for an all-day event'},
-            'yearly': {'type': 'boolean'},
-            'reminder': {'type': 'string', 'enum': ['at_start', '10m', '1h', '1d']},
-            'note': _str,
-          }, ['title', 'date']),
+          _draft('event', _eventFields, ['title', 'date']),
+          // Only what changes; all_day true turns a timed event into an all-day one.
+          _draft('event_update', {'id': _str, ..._eventFields, 'all_day': {'type': 'boolean'}}, ['id']),
         ],
       },
     },

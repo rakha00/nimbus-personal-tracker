@@ -302,12 +302,55 @@ Future<DateTime?> _pickMonth(BuildContext context, DateTime current) {
   );
 }
 
+/// An event as saved, the rules EventForm and the assistant share: [start] is local time and an
+/// all-day event starts at midnight. Null without a title.
+Map<String, Object>? eventBody({
+  required String title,
+  required DateTime start,
+  required bool allDay,
+  required bool yearly,
+  required String reminder,
+  required String note,
+}) {
+  if (title.trim().isEmpty) return null;
+  final at = allDay ? DateTime(start.year, start.month, start.day) : start;
+  return {
+    'title': title.trim(),
+    'starts_at': at.toUtc().toIso8601String(),
+    'all_day': allDay,
+    'yearly': yearly,
+    'reminder': reminder,
+    'note': note.trim(),
+  };
+}
+
+/// The body for an AI event draft (date YYYY-MM-DD, time HH:MM): a new event (no time: all-day),
+/// or [base] with only the draft's fields changed. A new date on a yearly event keeps its first
+/// year, so a birthday still shows every year.
+Map<String, Object>? eventDraftBody(Map<String, dynamic> d, [RecordModel? base]) {
+  final old = base == null ? null : eventStart(base);
+  final yearly = d['yearly'] as bool? ?? base?.getBoolValue('yearly') ?? false;
+  final day = DateTime.tryParse('${d['date']}');
+  final date = day == null
+      ? old ?? dayOnly(DateTime.now())
+      : DateTime(old != null && yearly && base!.getBoolValue('yearly') ? old.year : day.year, day.month, day.day);
+  final hm = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch('${d['time'] ?? ''}');
+  return eventBody(
+    title: d['title'] as String? ?? base?.getStringValue('title') ?? '',
+    start: DateTime(date.year, date.month, date.day,
+        hm != null ? int.parse(hm[1]!) : old?.hour ?? 9, hm != null ? int.parse(hm[2]!) : old?.minute ?? 0),
+    allDay: hm == null && (d['all_day'] as bool? ?? base?.getBoolValue('all_day') ?? true),
+    yearly: yearly,
+    reminder: switch (d['reminder']) { null => base?.getStringValue('reminder') ?? '', 'none' => '', final r => '$r' },
+    note: d['note'] as String? ?? base?.getStringValue('note') ?? '',
+  );
+}
+
 /// Add or edit one event; for an existing one it doubles as the detail page.
 class EventForm extends StatefulWidget {
-  const EventForm({super.key, this.event, required this.day, this.draft});
+  const EventForm({super.key, this.event, required this.day});
   final RecordModel? event; // null = new
   final DateTime day; // the picked day, for a new event
-  final Map<String, dynamic>? draft; // an AI suggestion for a new one: date YYYY-MM-DD, time HH:MM
 
   @override
   State<EventForm> createState() => _EventFormState();
@@ -315,32 +358,28 @@ class EventForm extends StatefulWidget {
 
 class _EventFormState extends State<EventForm> {
   late final e = widget.event;
-  late final dr = widget.draft ?? const {};
-  late final DateTime start = e != null
-      ? eventStart(e!)
-      : DateTime.tryParse('${dr['date']} ${dr['time'] ?? '09:00'}') ?? widget.day.add(const Duration(hours: 9));
-  late final title = TextEditingController(text: e?.getStringValue('title') ?? dr['title'] as String? ?? '');
-  late final note = TextEditingController(text: e?.getStringValue('note') ?? dr['note'] as String? ?? '');
+  late final DateTime start = e == null ? widget.day.add(const Duration(hours: 9)) : eventStart(e!);
+  late final title = TextEditingController(text: e?.getStringValue('title') ?? '');
+  late final note = TextEditingController(text: e?.getStringValue('note') ?? '');
   late DateTime date = dayOnly(start);
   late TimeOfDay time = TimeOfDay.fromDateTime(start);
-  late bool allDay = e?.getBoolValue('all_day') ?? (widget.draft != null && dr['time'] == null);
-  late bool yearly = e?.getBoolValue('yearly') ?? dr['yearly'] as bool? ?? false;
-  late String reminder = e?.getStringValue('reminder') ?? dr['reminder'] as String? ?? '';
+  late bool allDay = e?.getBoolValue('all_day') ?? false;
+  late bool yearly = e?.getBoolValue('yearly') ?? false;
+  late String reminder = e?.getStringValue('reminder') ?? '';
   bool busy = false;
   String? error, titleError;
 
   Future<void> save() async {
-    if (title.text.trim().isEmpty) return setState(() => titleError = AppLocalizations.of(context).required);
-    final at = DateTime(date.year, date.month, date.day, allDay ? 0 : time.hour, allDay ? 0 : time.minute);
-    final body = {
-      'owner': userId,
-      'title': title.text.trim(),
-      'starts_at': at.toUtc().toIso8601String(),
-      'all_day': allDay,
-      'yearly': yearly,
-      'reminder': reminder,
-      'note': note.text.trim(),
-    };
+    final fields = eventBody(
+      title: title.text,
+      start: DateTime(date.year, date.month, date.day, time.hour, time.minute),
+      allDay: allDay,
+      yearly: yearly,
+      reminder: reminder,
+      note: note.text,
+    );
+    if (fields == null) return setState(() => titleError = AppLocalizations.of(context).required);
+    final body = {'owner': userId, ...fields};
     await _run(() => e == null
         ? pb.collection('calendar_events').create(body: body)
         : pb.collection('calendar_events').update(e!.id, body: body));

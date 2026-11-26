@@ -18,11 +18,12 @@ toward a personal tracking app that an AI assistant can later read through MCP.
   date finished, a 1–5 rating and notes. Search fills in cover, year, director or author and
   synopsis from TMDB (films, needs `TMDB_KEY` in `config.json`) or Google Books.
 - **Assistant** (Claude logo in the app bar): one box for both. A note like "lunch 25k cash"
-  becomes drafts, and a question about the data gets a short answer. Transactions and media to
-  add, change or delete are approved or rejected right in the panel (a film or book is looked up
-  on TMDB or Google Books, with up to three candidates for a misspelled title); diary and calendar
-  drafts open in their normal forms, and a diary entry can be edited but not deleted. It runs
-  Claude Code on the server with read-only access (see AI worker below); the app makes every
+  becomes drafts, and a question about the data gets a short answer. Transactions, media and
+  calendar events are approved or rejected right in the panel: transactions and media can be
+  added, changed or deleted (a film or book is looked up on TMDB or Google Books, with up to three
+  candidates for a misspelled title), events added or changed (moved, renamed, reminder changed)
+  but not deleted. Diary drafts open in the editor; an entry can be edited but not deleted. It
+  runs Claude Code on the server with read-only access (see AI worker below); the app makes every
   write, with the user's login, after approval.
 - **Device lock**: the app opens with the phone's own fingerprint or PIN and locks again after a
   minute in the background. There is no in-app login screen after the one-time setup.

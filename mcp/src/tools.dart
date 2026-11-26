@@ -240,21 +240,30 @@ class Nimbus {
     ),
     'events': (
       description: 'Calendar events between two dates (at most 366 days), in date order, with yearly '
-          'events (birthdays, anniversaries) repeated. Times are WIB.',
-      schema: _schema({'from': _str('YYYY-MM-DD'), 'to': _str('YYYY-MM-DD')}, required: ['from', 'to']),
+          'events (birthdays, anniversaries) repeated; each has the event id. Times are WIB. query keeps '
+          'events whose title has every typed word, ignoring case and punctuation.',
+      schema: _schema({
+        'from': _str('YYYY-MM-DD'),
+        'to': _str('YYYY-MM-DD'),
+        'query': _str('Words to find in the title'),
+      }, required: ['from', 'to']),
       run: (args) async {
         final (from, to) = range(args, 366);
+        final q = words('${args['query'] ?? ''}');
         final out = <Map<String, Object>>[];
         // ponytail: loads every event to expand yearly ones; fine for a personal calendar.
         for (final r in await _all('calendar_events')) {
+          if (!words(r.getStringValue('title')).containsAll(q)) continue;
           final start = DateTime.parse(r.getStringValue('starts_at')).toUtc().add(const Duration(hours: 7));
           final allDay = r.getBoolValue('all_day');
           for (final d in occurrences(start, r.getBoolValue('yearly'), from, to)) {
             out.add({
+              'id': r.id, // so a change can point at it
               'date': ymd(d),
               if (!allDay) 'time': '${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}',
               'title': r.getStringValue('title'),
               if (r.getBoolValue('yearly')) 'yearly': true,
+              if (r.getStringValue('reminder').isNotEmpty) 'reminder': r.getStringValue('reminder'),
               if (r.getStringValue('note').isNotEmpty) 'note': r.getStringValue('note'),
             });
           }

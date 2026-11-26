@@ -408,6 +408,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get mediaNotFound => 'Item media tidak ditemukan';
 
   @override
+  String get eventNotFound => 'Acara tidak ditemukan';
+
+  @override
   String get assistantIncomplete => 'Belum lengkap';
 
   @override
