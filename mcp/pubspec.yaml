@@ -1,0 +1,13 @@
+name: nimbus_mcp
+description: Read-only MCP server over Nimbus data, for the AI assistant.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  pocketbase: ^0.26.0
+
+dev_dependencies:
+  test: ^1.26.0

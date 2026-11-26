@@ -2,3 +2,6 @@ server/pb_data/
 .taste-skill/
 app/config.json
 server/.env
+server/ai.env
+server/ai/nimbus-*
+mcp/.dart_tool/

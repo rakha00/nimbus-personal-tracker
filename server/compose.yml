@@ -16,6 +16,26 @@ services:
       - traefik.http.routers.nimbus-http.entrypoints=web
       - traefik.http.routers.nimbus-http.middlewares=redirect-to-https@file
       - traefik.http.services.nimbus.loadbalancer.server.port=8090
+
+  # AI worker (see ai/Dockerfile). Kill switch: docker compose stop ai
+  # It reaches PocketBase by its public URL, so it stays off the shared Dokploy network.
+  ai:
+    build: ./ai
+    container_name: nimbus-ai
+    restart: unless-stopped
+    env_file:
+      - path: ai.env # NIMBUS_SERVER, AI_EMAIL, AI_PASSWORD, CLAUDE_CODE_OAUTH_TOKEN (not in Git)
+        format: raw
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/node:uid=1000,gid=1000
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 128
+
 networks:
   dokploy-network:
     external: true
