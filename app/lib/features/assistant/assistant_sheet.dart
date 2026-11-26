@@ -137,13 +137,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
     try {
       final Widget page = switch (d['module']) {
         'transaction' => TransactionForm(data: finance!, draft: d),
-        'diary' => DiaryEditor(
-            date: date,
-            entry: (await pb.collection('diary_entries').getList(perPage: 1, filter: pb.filter('date = {:d}', {'d': toPbDate(date)})))
-                .items
-                .firstOrNull,
-            append: d['text'] as String? ?? '',
-          ),
+        'diary' || 'diary_update' => await _diaryEditor(d, date),
         'media' => await _mediaForm(d),
         _ => EventForm(day: date, draft: d),
       };
@@ -153,6 +147,20 @@ class _AssistantSheetState extends State<AssistantSheet> {
     } catch (_) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).loadFailed)));
     }
+  }
+
+  /// A diary draft adds lines under that day's entry; a diary_update replaces its text (the AI
+  /// keeps what wasn't asked to change). The user still saves in the editor; the AI never deletes.
+  Future<DiaryEditor> _diaryEditor(Map<String, dynamic> d, DateTime date) async {
+    final entry = (await pb.collection('diary_entries').getList(perPage: 1, filter: pb.filter('date = {:d}', {'d': toPbDate(date)})))
+        .items
+        .firstOrNull;
+    final old = entry?.getStringValue('content') ?? '';
+    final text = d['module'] == 'diary_update'
+        ? d['content'] as String? ?? ''
+        : [old, d['text'] as String? ?? ''].where((s) => s.isNotEmpty).join('\n');
+    // An empty text would delete the entry on save; deleting is left to the user.
+    return DiaryEditor(date: date, entry: entry, text: text.trim().isEmpty ? old : text);
   }
 
   /// A title already in the log is updated (e.g. wishlist → done) instead of added twice.
@@ -357,6 +365,7 @@ class _DraftTile extends StatelessWidget {
     final day = _day(context, d['date'] ?? d['finished_on']);
     final (icon, title, parts) = switch (d['module']) {
       'diary' => (Icons.book_outlined, '${t.diary} · $day', [d['text']]),
+      'diary_update' => (Icons.edit_note, '${t.diary} · $day', [d['content']]),
       'media' => (
           Icons.movie_outlined,
           '${d['title'] ?? ''}',

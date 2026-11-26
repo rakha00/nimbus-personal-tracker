@@ -139,18 +139,17 @@ class _EntryRow extends StatelessWidget {
 }
 
 class DiaryEditor extends StatefulWidget {
-  const DiaryEditor({super.key, required this.date, this.entry, this.append = ''});
+  const DiaryEditor({super.key, required this.date, this.entry, this.text});
   final DateTime date;
   final RecordModel? entry;
-  final String append; // text to add under the entry (an AI draft)
+  final String? text; // starting text instead of the entry's (an AI draft)
 
   @override
   State<DiaryEditor> createState() => _DiaryEditorState();
 }
 
 class _DiaryEditorState extends State<DiaryEditor> {
-  late final text = TextEditingController(
-      text: [widget.entry?.getStringValue('content') ?? '', widget.append].where((s) => s.isNotEmpty).join('\n'));
+  late final text = TextEditingController(text: widget.text ?? widget.entry?.getStringValue('content') ?? '');
   bool busy = false;
 
   Future<void> save() async {

@@ -141,6 +141,12 @@ change; a transaction_delete draft holds only the id. If more than one transacti
 meant, make no draft and list the candidates briefly (date, amount, note) so the user can say
 which one. The user approves or rejects each draft in the app.
 
+To change what a diary entry already says (fix, rewrite, reword or remove a line), read that
+day with the diary tool first, then give a diary_update draft with the whole new text of the
+entry: apply only what the user asked and keep everything else as it was. Use the diary draft
+only to add new lines. Never delete a diary entry and never empty one: if asked, make no draft
+and say a diary entry can only be deleted in the app.
+
 A question: answer from the tools; never guess numbers, and use totals the tools give rather
 than adding many values yourself. Write money like Rp25.000.
 
@@ -180,6 +186,8 @@ final outputSchema = {
           _draft('transaction_update', {'id': _str, ..._txFields}, ['id']),
           _draft('transaction_delete', {'id': _str}, ['id']),
           _draft('diary', {'date': _date, 'text': _str}, ['date', 'text']),
+          // The whole new text of that day's entry; never empty, since an empty entry is deleted.
+          _draft('diary_update', {'date': _date, 'content': {'type': 'string', 'minLength': 1}}, ['date', 'content']),
           _draft('media', {
             'media_type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book']},
             'title': _str,
