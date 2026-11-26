@@ -32,6 +32,42 @@ List<ButtonSegment<String>> statusSegments(AppLocalizations t, String type) => [
       ButtonSegment(value: 'done', label: Text(t.mediaDone)),
     ];
 
+/// A media item as saved, the rules MediaForm and the assistant share: films have no "in progress",
+/// and only a finished item keeps a finish date (today if none) and a rating. Null without a title.
+Map<String, Object>? mediaBody(Map<String, dynamic> x) {
+  final title = '${x['title'] ?? ''}'.trim();
+  if (title.isEmpty) return null;
+  final type = x['type'] as String? ?? 'film';
+  final status = type == 'film' && x['status'] == 'progress' ? 'wishlist' : x['status'] as String? ?? 'wishlist';
+  final done = status == 'done';
+  return {
+    'type': type,
+    'title': title,
+    'creator': '${x['creator'] ?? ''}'.trim(),
+    'year': (x['year'] as num? ?? 0).toInt(),
+    'external_id': x['external_id'] ?? '',
+    'cover_url': x['cover_url'] ?? '',
+    'synopsis': x['synopsis'] ?? '',
+    'status': status,
+    'finished_on': done ? toPbDate(DateTime.tryParse('${x['finished_on']}') ?? dayOnly(DateTime.now())) : '',
+    'rating': done ? (x['rating'] as num? ?? 0).toInt() : 0,
+    'note': '${x['note'] ?? ''}'.trim(),
+  };
+}
+
+/// The body for an AI media draft: a new item from [hit] (fetched by its external_id) or typed in by
+/// hand, or [base] with only the draft's status, finish date, rating or note changed.
+Map<String, Object>? mediaDraftBody(Map<String, dynamic> d, {RecordModel? base, Hit? hit}) => mediaBody({
+      if (base != null) ...base.data else if (hit != null) ...hit else ...{
+        'type': d['media_type'],
+        'title': d['title'],
+        'creator': d['creator'],
+        'year': d['year'],
+      },
+      for (final k in ['status', 'finished_on', 'rating', 'note'])
+        if (d[k] != null) k: d[k],
+    });
+
 /// Films, series, anime and books: a wishlist, what's in progress, and a log of what's done.
 class MediaScreen extends StatefulWidget {
   const MediaScreen({super.key});
@@ -452,22 +488,21 @@ class _MediaFormState extends State<MediaForm> {
   String? error;
 
   Future<void> save() async {
-    if (title.text.trim().isEmpty) return setState(() => error = AppLocalizations.of(context).required);
-    final done = status == 'done';
-    final body = {
-      'owner': userId,
+    final fields = mediaBody({
       'type': type,
-      'title': title.text.trim(),
-      'creator': creator.text.trim(),
+      'title': title.text,
+      'creator': creator.text,
       'year': int.tryParse(year.text) ?? 0,
-      'external_id': d['external_id'] ?? '',
-      'cover_url': d['cover_url'] ?? '',
-      'synopsis': d['synopsis'] ?? '',
+      'external_id': d['external_id'],
+      'cover_url': d['cover_url'],
+      'synopsis': d['synopsis'],
       'status': status,
-      'finished_on': done ? toPbDate(finished) : '',
-      'rating': done ? rating : 0,
-      'note': note.text.trim(),
-    };
+      'finished_on': toPbDate(finished),
+      'rating': rating,
+      'note': note.text,
+    });
+    if (fields == null) return setState(() => error = AppLocalizations.of(context).required);
+    final body = {'owner': userId, ...fields};
     final id = widget.id;
     await _run(() => id == null
         ? pb.collection('media_items').create(body: body)

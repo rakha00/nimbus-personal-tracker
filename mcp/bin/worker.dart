@@ -31,7 +31,11 @@ Future<void> main() async {
       'mcpServers': {
         'nimbus': {
           'command': env['NIMBUS_MCP_BIN'] ?? '/usr/local/bin/nimbus-mcp',
-          'env': {for (final k in ['NIMBUS_SERVER', 'AI_EMAIL', 'AI_PASSWORD']) k: need(k)},
+          'env': {
+            for (final k in ['NIMBUS_SERVER', 'AI_EMAIL', 'AI_PASSWORD']) k: need(k),
+            'TMDB_KEY': ?env['TMDB_KEY'],
+            'BOOKS_KEY': ?env['BOOKS_KEY'],
+          },
         },
       },
     }));
@@ -141,6 +145,28 @@ change; a transaction_delete draft holds only the id. If more than one transacti
 meant, make no draft and list the candidates briefly (date, amount, note) so the user can say
 which one. The user approves or rejects each draft in the app.
 
+Finding an item in the log: titles may be stored in their original language (e.g. Korean) and the
+user may name the wrong type, so if the media tool's query finds nothing, list the whole log (no
+query) and also media_search the user's title in every type it could be: a logged item with the
+same external_id as a hit is the same title. Treat it as missing only after both checks.
+
+A film, series, anime or book to log: check the log first; if it's already there, make a
+media_update instead of a new one. Otherwise call media_search and copy external_id, title, year,
+creator and cover_url exactly from a hit. Pick the hit whose title matches what the user typed,
+in the same language: for "bumi manusia" take "Bumi Manusia", not a translation like "This Earth
+of Mankind"; if only translations come back, search again in the typed language or say so.
+One clear match: one media draft. A likely typo or
+several possible titles: one media draft per likely candidate, at most 3, and say in the answer
+to approve the right one and reject the rest. Nothing found: no draft; say so and suggest a
+corrected title or logging it by hand. Only when the user asks to log it by hand (manual): a
+media draft with the user's title and no external_id. Films have no "progress" status.
+
+To change a logged item's status, finish date, rating or note, or to delete it, find it in the log
+as above and use its id exactly: media_update holds the id and only what changes, media_delete
+only the id. Moving an item out of done clears its finish date and rating by itself; no need to
+mention them. If more than one item could be meant, make no draft and ask which one. Asked to change
+or delete something that isn't in the log: make no draft (never add it as new) and say so.
+
 To change what a diary entry already says (fix, rewrite, reword or remove a line), read that
 day with the diary tool first, then give a diary_update draft with the whole new text of the
 entry: apply only what the user asked and keep everything else as it was. Use the diary draft
@@ -162,6 +188,13 @@ Map<String, Object> _draft(String module, Map<String, Object> props, List<String
       'required': ['module', ...required],
       'additionalProperties': false,
     };
+
+const _mediaLog = {
+  'status': {'type': 'string', 'enum': ['wishlist', 'progress', 'done']},
+  'finished_on': _date,
+  'rating': {'type': 'integer', 'minimum': 1, 'maximum': 5},
+  'note': _str,
+};
 
 const _txFields = {
   'date': _date,
@@ -191,11 +224,14 @@ final outputSchema = {
           _draft('media', {
             'media_type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book']},
             'title': _str,
-            'status': {'type': 'string', 'enum': ['wishlist', 'progress', 'done']},
-            'finished_on': _date,
-            'rating': {'type': 'integer', 'minimum': 1, 'maximum': 5},
-            'note': _str,
+            'year': {'type': 'integer'},
+            'creator': _str,
+            'external_id': _str, // from media_search; left out only for a manual entry
+            'cover_url': _str,
+            ..._mediaLog,
           }, ['media_type', 'title', 'status']),
+          _draft('media_update', {'id': _str, ..._mediaLog}, ['id']),
+          _draft('media_delete', {'id': _str}, ['id']),
           _draft('event', {
             'title': _str,
             'date': _date,

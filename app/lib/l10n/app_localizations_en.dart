@@ -405,6 +405,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assistantNotFound => 'Transaction not found';
 
   @override
+  String get mediaNotFound => 'Media item not found';
+
+  @override
   String get assistantIncomplete => 'Incomplete';
 
   @override

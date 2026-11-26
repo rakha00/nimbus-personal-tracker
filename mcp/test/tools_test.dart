@@ -37,4 +37,10 @@ void main() {
     expect(() => range({'from': '2026-02-01', 'to': '2026-01-01'}, 31), throwsArgumentError);
     expect(() => range({'from': 'kemarin', 'to': '2026-01-01'}, 31), throwsArgumentError);
   });
+
+  test('words ignore case and punctuation, and keep non-Latin titles', () {
+    expect(words('Teka-Teki Tika').containsAll(words('teka teki tika')), isTrue);
+    expect(words('조명가게'), {'조명가게'});
+    expect(words(''), isEmpty); // no query matches every item
+  });
 }

@@ -10,6 +10,7 @@ import '../calendar/calendar_screen.dart';
 import '../diary/diary_screen.dart';
 import '../finance/finance_data.dart';
 import '../finance/transaction_form.dart';
+import '../media/media_api.dart';
 import '../media/media_screen.dart';
 
 /// Bumped after the assistant's drafts were saved, so every tab reloads.
@@ -54,7 +55,8 @@ class _AssistantSheetState extends State<AssistantSheet> {
   String? answer, error;
   List<Map<String, dynamic>> drafts = [];
   FinanceData? finance; // loaded when there are transaction drafts, to map names and find records
-  final outcome = <int, String>{}; // draft index → saved | rejected | failed
+  List<RecordModel> media = []; // the media log, loaded when there are media drafts
+  final outcome = <int, String>{}; // draft index → working | saved | rejected | failed
 
   Future<void> send() async {
     final t = AppLocalizations.of(context);
@@ -80,6 +82,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
       }
       final list = [for (final d in r.data['drafts'] as List? ?? []) Map<String, dynamic>.from(d as Map)];
       final f = list.any(_isTx) ? await loadFinance() : null;
+      final m = list.any(_isMedia) ? await pb.collection('media_items').getFullList() : <RecordModel>[];
       if (!mounted) return;
       setState(() {
         if (r.getStringValue('status') == 'error') {
@@ -92,6 +95,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
           answer = r.getStringValue('answer');
           drafts = list;
           finance = f;
+          media = m;
         }
       });
     } on TimeoutException {
@@ -108,27 +112,39 @@ class _AssistantSheetState extends State<AssistantSheet> {
     if (result == 'saved') widget.onSaved();
   }
 
-  /// Writes an approved transaction draft, with the user's own login.
+  /// Writes an approved transaction or media draft, with the user's own login.
   Future<void> approve(int i) async {
-    final d = drafts[i], f = finance!;
-    final tx = pb.collection('transactions');
+    final d = drafts[i];
+    final lang = Localizations.localeOf(context).languageCode;
+    setState(() => outcome[i] = 'working'); // a spinner while it saves (media also fetches details)
+    final tx = pb.collection('transactions'), items = pb.collection('media_items');
     try {
       switch (d['module']) {
         case 'transaction_delete':
           await tx.delete(d['id'] as String);
         case 'transaction_update':
-          await tx.update(d['id'] as String, body: f.draftBody(d, _base(d))!);
+          await tx.update(d['id'] as String, body: finance!.draftBody(d, _base(d))!);
+        case 'transaction':
+          await tx.create(body: {'owner': userId, ...finance!.draftBody(d)!});
+        case 'media_delete':
+          await items.delete(d['id'] as String);
+        case 'media_update':
+          await items.update(d['id'] as String, body: mediaDraftBody(d, base: _base(d))!);
         default:
-          await tx.create(body: {'owner': userId, ...f.draftBody(d)!});
+          // The draft only names the pick; cover, creator and synopsis come straight from the API.
+          final ext = d['external_id'] as String? ?? '';
+          final hit = ext.isEmpty ? null : await completeHit(await fetchHit(ext, d['media_type'] as String, lang));
+          await items.create(body: {'owner': userId, ...mediaDraftBody(d, hit: hit)!});
       }
-      financeChanged();
+      if (_isTx(d)) financeChanged();
       _done(i, 'saved');
     } catch (_) {
       _done(i, 'failed');
     }
   }
 
-  RecordModel? _base(Map<String, dynamic> d) => finance?.txs.where((r) => r.id == d['id']).firstOrNull;
+  /// The existing record a change or deletion points at.
+  RecordModel? _base(Map<String, dynamic> d) => (_isTx(d) ? finance?.txs ?? [] : media).where((r) => r.id == d['id']).firstOrNull;
 
   /// Opens the module's normal form filled with the draft; the user saves it there.
   Future<void> open(int i) async {
@@ -138,7 +154,6 @@ class _AssistantSheetState extends State<AssistantSheet> {
       final Widget page = switch (d['module']) {
         'transaction' => TransactionForm(data: finance!, draft: d),
         'diary' || 'diary_update' => await _diaryEditor(d, date),
-        'media' => await _mediaForm(d),
         _ => EventForm(day: date, draft: d),
       };
       if (!mounted) return;
@@ -161,27 +176,6 @@ class _AssistantSheetState extends State<AssistantSheet> {
         : [old, d['text'] as String? ?? ''].where((s) => s.isNotEmpty).join('\n');
     // An empty text would delete the entry on save; deleting is left to the user.
     return DiaryEditor(date: date, entry: entry, text: text.trim().isEmpty ? old : text);
-  }
-
-  /// A title already in the log is updated (e.g. wishlist → done) instead of added twice.
-  Future<MediaForm> _mediaForm(Map<String, dynamic> d) async {
-    final title = d['title'] as String? ?? '';
-    final hits = await pb.collection('media_items').getFullList(filter: pb.filter('title ~ {:t}', {'t': title}));
-    final RecordModel? existing = hits.where((h) => h.getStringValue('title').toLowerCase() == title.toLowerCase()).firstOrNull;
-    final type = existing?.getStringValue('type') ?? d['media_type'] as String? ?? 'film';
-    final status = d['status'] as String? ?? 'wishlist';
-    return MediaForm(
-      id: existing?.id,
-      status: type == 'film' && status == 'progress' ? 'wishlist' : status, // films have no "in progress"
-      data: {
-        'type': type,
-        'title': title,
-        ...?existing?.data,
-        'finished_on': ?d['finished_on'],
-        'rating': ?d['rating'],
-        if (existing == null || existing.getStringValue('note').isEmpty) 'note': ?d['note'],
-      },
-    );
   }
 
   @override
@@ -226,6 +220,14 @@ class _AssistantSheetState extends State<AssistantSheet> {
                     onReject: () => _done(i, 'rejected'),
                     onComplete: () => open(i),
                   )
+                else if (_isMedia(d))
+                  _MediaDraftTile(
+                    draft: d,
+                    base: _base(d),
+                    outcome: outcome[i],
+                    onApprove: () => approve(i),
+                    onReject: () => _done(i, 'rejected'),
+                  )
                 else
                   _DraftTile(draft: d, saved: outcome[i] == 'saved', onTap: () => open(i)),
               ],
@@ -238,6 +240,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
 }
 
 bool _isTx(Map<String, dynamic> d) => '${d['module']}'.startsWith('transaction');
+bool _isMedia(Map<String, dynamic> d) => '${d['module']}'.startsWith('media');
 
 String _txType(AppLocalizations t, Object? type) => switch (type) {
       'income' => t.income,
@@ -310,31 +313,67 @@ class _TxDraftTile extends StatelessWidget {
                   );
     final before = action == 'transaction_update' && base != null ? describe(base!.data) : null;
     final incomplete = isNew && body == null;
-    final canApprove = !missing && (action == 'transaction_delete' || body != null);
-    final cs = Theme.of(context).colorScheme;
-    final small = Theme.of(context).textTheme.bodySmall;
-    Text oneLine(String s, [TextStyle? style]) => Text(s, maxLines: 1, overflow: TextOverflow.ellipsis, style: style);
+    return _ApprovalTile(
+      leading: _actionIcon(context, action, Icons.account_balance_wallet_outlined),
+      title: title,
+      line: line,
+      before: before == null ? null : '${before.$1} · ${before.$2}',
+      outcome: outcome,
+      onReject: onReject,
+      onApprove: !missing && (action == 'transaction_delete' || body != null) ? onApprove : null,
+      onComplete: incomplete ? onComplete : null,
+    );
+  }
+}
 
-    // One compact row: what it does (leading icon), the transaction, then reject / approve.
+/// The leading icon: what the draft does. A new one shows [add].
+Widget _actionIcon(BuildContext context, Object? module, IconData add) => switch ('$module') {
+      final m when m.endsWith('_update') => const Icon(Icons.edit_outlined),
+      final m when m.endsWith('_delete') => Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
+      _ => Icon(add),
+    };
+
+/// One compact draft row: what it does, one line of detail, then reject / approve (or the outcome).
+class _ApprovalTile extends StatelessWidget {
+  const _ApprovalTile({
+    required this.leading,
+    required this.title,
+    required this.line,
+    this.before,
+    required this.outcome,
+    required this.onReject,
+    required this.onApprove,
+    this.onComplete,
+  });
+  final Widget leading;
+  final String title, line;
+  final String? before; // a change's previous values
+  final String? outcome;
+  final VoidCallback onReject;
+  final VoidCallback? onApprove; // null: can't be approved as is
+  final VoidCallback? onComplete; // set: incomplete, so open the form instead of approving
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final cs = Theme.of(context).colorScheme;
+    Text oneLine(String s, [TextStyle? style]) => Text(s, maxLines: 1, overflow: TextOverflow.ellipsis, style: style);
     return ListTile(
       dense: true,
       contentPadding: const EdgeInsets.only(left: 16, right: 4),
-      leading: switch (action) {
-        'transaction_update' => const Icon(Icons.edit_outlined),
-        'transaction_delete' => Icon(Icons.delete_outline, color: cs.error),
-        _ => const Icon(Icons.account_balance_wallet_outlined),
-      },
+      leading: leading,
       title: oneLine(title),
       subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         if (line.isNotEmpty) oneLine(line),
-        if (before != null) oneLine('${t.assistantBefore}: ${before.$1} · ${before.$2}', small),
-        if (incomplete) oneLine(t.assistantIncomplete, TextStyle(color: cs.error)),
+        if (before != null) oneLine('${t.assistantBefore}: $before', Theme.of(context).textTheme.bodySmall),
+        if (onComplete != null) oneLine(t.assistantIncomplete, TextStyle(color: cs.error)),
       ]),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         if (outcome != null)
           Padding(
             padding: const EdgeInsets.all(12),
             child: switch (outcome) {
+              'working' => const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2.5)),
               'saved' => Icon(Icons.check_circle, semanticLabel: t.assistantSaved),
               'rejected' => Icon(Icons.block, color: cs.outline, semanticLabel: t.assistantRejected),
               _ => Icon(Icons.error_outline, color: cs.error, semanticLabel: t.saveFailed),
@@ -342,16 +381,69 @@ class _TxDraftTile extends StatelessWidget {
           )
         else ...[
           IconButton(onPressed: onReject, icon: const Icon(Icons.close), tooltip: t.assistantReject),
-          incomplete
+          onComplete != null
               ? IconButton.filled(onPressed: onComplete, icon: const Icon(Icons.edit), tooltip: t.assistantComplete)
-              : IconButton.filled(onPressed: canApprove ? onApprove : null, icon: const Icon(Icons.check), tooltip: t.assistantApprove),
+              : IconButton.filled(onPressed: onApprove, icon: const Icon(Icons.check), tooltip: t.assistantApprove),
         ],
       ]),
     );
   }
 }
 
-/// A diary, media or calendar draft: tapping it opens the normal form.
+/// A film, series, anime or book to add, change or delete. A new one shows its cover; changes and
+/// deletions show the item as it is in the log.
+class _MediaDraftTile extends StatelessWidget {
+  const _MediaDraftTile({required this.draft, required this.base, required this.outcome, required this.onApprove, required this.onReject});
+  final Map<String, dynamic> draft;
+  final RecordModel? base;
+  final String? outcome;
+  final VoidCallback onApprove, onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final d = draft, action = d['module'];
+    final isNew = action == 'media';
+    final missing = !isNew && base == null;
+    // A new draft names the hit (media_type, title, year, cover); an existing item is a saved record.
+    final Map<String, dynamic> shown = isNew
+        ? {...d, 'type': d['media_type']}
+        : action == 'media_update' && base != null
+            ? mediaDraftBody(d, base: base) ?? base!.data
+            : base?.data ?? {};
+    // "Dune: Part Two (2024)" and "Film · Done · 20 Nov · ★4 · note".
+    (String, String) describe(Map<String, dynamic> x) {
+      final year = (x['year'] as num? ?? 0).toInt(), rating = (x['rating'] as num? ?? 0).toInt();
+      final done = x['status'] == 'done';
+      return (
+        '${x['title'] ?? ''}${year > 0 ? ' ($year)' : ''}',
+        [
+          switch (x['type']) { 'series' => t.mediaSeries, 'anime' => t.mediaAnime, 'book' => t.mediaBook, _ => t.mediaFilm },
+          switch (x['status']) { 'done' => t.mediaDone, 'progress' => t.mediaProgress, _ => t.mediaWishlist },
+          if (done) _day(context, x['finished_on']),
+          if (done && rating > 0) '★$rating',
+          '${x['note'] ?? ''}',
+        ].where((s) => s.isNotEmpty).join(' · '),
+      );
+    }
+
+    final (title, line) = missing ? (t.mediaNotFound, '') : describe(shown);
+    final before = action == 'media_update' && base != null ? describe(base!.data) : null;
+    return _ApprovalTile(
+      leading: isNew
+          ? Cover(d['cover_url'] as String? ?? '', type: d['media_type'] as String? ?? 'film', width: 28)
+          : _actionIcon(context, action, Icons.movie_outlined),
+      title: title,
+      line: line,
+      before: before == null ? null : '${before.$1} · ${before.$2}',
+      outcome: outcome,
+      onReject: onReject,
+      onApprove: missing || (isNew && mediaDraftBody(d) == null) ? null : onApprove,
+    );
+  }
+}
+
+/// A diary or calendar draft: tapping it opens the normal form.
 class _DraftTile extends StatelessWidget {
   const _DraftTile({required this.draft, required this.saved, required this.onTap});
   final Map<String, dynamic> draft;
@@ -366,11 +458,6 @@ class _DraftTile extends StatelessWidget {
     final (icon, title, parts) = switch (d['module']) {
       'diary' => (Icons.book_outlined, '${t.diary} · $day', [d['text']]),
       'diary_update' => (Icons.edit_note, '${t.diary} · $day', [d['content']]),
-      'media' => (
-          Icons.movie_outlined,
-          '${d['title'] ?? ''}',
-          [switch (d['status']) { 'done' => t.mediaDone, 'progress' => t.mediaProgress, _ => t.mediaWishlist }, day],
-        ),
       _ => (Icons.calendar_month_outlined, '${d['title'] ?? ''}', [day, d['time']]),
     };
     return ListTile(

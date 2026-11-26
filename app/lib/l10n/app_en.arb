@@ -163,6 +163,7 @@
   "assistantReject": "Reject",
   "assistantBefore": "Before",
   "assistantNotFound": "Transaction not found",
+  "mediaNotFound": "Media item not found",
   "assistantIncomplete": "Incomplete",
   "assistantComplete": "Complete",
   "assistantSaved": "Saved",

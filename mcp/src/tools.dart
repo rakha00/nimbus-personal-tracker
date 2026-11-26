@@ -7,6 +7,8 @@ import 'package:pocketbase/pocketbase.dart';
 // Same balance/debt math as the app, so answers match what the phone shows. Imported by path
 // (not package:) since the app is a Flutter package; that's also why this file isn't in lib/.
 import '../../app/lib/features/finance/ledger.dart';
+// TMDB / Google Books search, shared with the app's media screen.
+import '../../app/lib/features/media/media_api.dart';
 
 /// Indonesia (WIB) has no DST. ponytail: fixed +7; make it configurable if the user ever moves zones.
 DateTime wibNow() => DateTime.now().toUtc().add(const Duration(hours: 7));
@@ -58,6 +60,9 @@ Map<String, Object> monthSummary(Iterable<RecordModel> txs, Map<String, String> 
   final sorted = byCategory.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
   return {'income': income, 'expense': expense, 'net': income - expense, 'expense_by_category': {for (final e in sorted) e.key: e.value}};
 }
+
+/// Lowercase words, punctuation dropped: "Teka-Teki Tika" → {teka, tika}.
+Set<String> words(String s) => s.toLowerCase().split(RegExp(r'[^\p{L}\p{N}]+', unicode: true)).where((w) => w.isNotEmpty).toSet();
 
 const _limit = 100;
 const _txTypes = ['income', 'expense', 'transfer', 'lend', 'collect', 'borrow', 'repay'];
@@ -179,7 +184,9 @@ class Nimbus {
     ),
     'media': (
       description: 'Films, series, anime and books in the media log, at most $_limit, latest finished first. '
-          'status: wishlist, progress (watching/reading) or done. query searches title and creator.',
+          'status: wishlist, progress (watching/reading) or done. query matches items whose title or '
+          'creator has every typed word, ignoring case and punctuation ("teka teki tika" finds '
+          '"Teka-Teki Tika"); titles may be stored in their original language.',
       schema: _schema({
         'status': {'type': 'string', 'enum': ['wishlist', 'progress', 'done']},
         'type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book']},
@@ -190,13 +197,15 @@ class Nimbus {
           for (final k in ['status', 'type'])
             if (args[k] case final String v) pb.filter('$k = {:v}', {'v': v}),
         ].join(' && ');
-        final q = (args['query'] as String?)?.trim().toLowerCase();
+        final q = words('${args['query'] ?? ''}');
         final rows = [
           for (final r in await _all('media_items', filter: filter, sort: '-finished_on,-created'))
-            if (q == null || '${r.getStringValue('title')} ${r.getStringValue('creator')}'.toLowerCase().contains(q))
+            if (words('${r.getStringValue('title')} ${r.getStringValue('creator')}').containsAll(q))
               {
+                'id': r.id, // so a change or deletion can point at it
                 'title': r.getStringValue('title'),
                 'type': r.getStringValue('type'),
+                'external_id': r.getStringValue('external_id'),
                 'status': r.getStringValue('status'),
                 'creator': r.getStringValue('creator'),
                 'year': r.getIntValue('year'),
@@ -206,6 +215,27 @@ class Nimbus {
               }..removeWhere((_, v) => v == '' || v == 0),
         ];
         return {'count': rows.length, 'truncated': rows.length > _limit, 'items': rows.take(_limit).toList()};
+      },
+    ),
+    'media_search': (
+      description: 'Search TMDB (film, series, anime) or Google Books (book) by title; up to 5 hits with '
+          'external_id, title, year, creator (books only) and cover_url, best match first. Not the log: use media for that.',
+      schema: _schema({
+        'type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book']},
+        'query': _str('Title to search for'),
+      }, required: ['type', 'query']),
+      run: (args) async {
+        final query = '${args['query']}';
+        final hits = await searchMedia(args['type'] as String, query, 'id');
+        // Titles sharing more of the typed words first (so "bumi manusia" beats "This Earth of
+        // Mankind"); the API's own order breaks ties.
+        final typed = words(query);
+        int score(Hit h) => typed.intersection(words('${h['title']}')).length;
+        final ranked = hits.indexed.toList()..sort((a, b) => score(b.$2) != score(a.$2) ? score(b.$2) - score(a.$2) : a.$1 - b.$1);
+        return [
+          for (final (_, h) in ranked.take(5))
+            {for (final k in ['external_id', 'title', 'year', 'creator', 'cover_url']) k: h[k]}..removeWhere((_, v) => v == '' || v == 0),
+        ];
       },
     ),
     'events': (

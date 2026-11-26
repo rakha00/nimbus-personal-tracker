@@ -128,6 +128,7 @@
   "assistantReject": "Tolak",
   "assistantBefore": "Sebelumnya",
   "assistantNotFound": "Transaksi tidak ditemukan",
+  "mediaNotFound": "Item media tidak ditemukan",
   "assistantIncomplete": "Belum lengkap",
   "assistantComplete": "Lengkapi",
   "assistantSaved": "Tersimpan",

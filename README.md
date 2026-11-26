@@ -18,10 +18,12 @@ toward a personal tracking app that an AI assistant can later read through MCP.
   date finished, a 1–5 rating and notes. Search fills in cover, year, director or author and
   synopsis from TMDB (films, needs `TMDB_KEY` in `config.json`) or Google Books.
 - **Assistant** (Claude logo in the app bar): one box for both. A note like "lunch 25k cash"
-  becomes drafts, and a question about the data gets a short answer. Transactions to add, change
-  or delete are approved or rejected right in the panel; diary, media and calendar drafts open in
-  their normal forms. It runs Claude Code on the server with read-only access (see AI worker
-  below); the app makes every write, with the user's login, after approval.
+  becomes drafts, and a question about the data gets a short answer. Transactions and media to
+  add, change or delete are approved or rejected right in the panel (a film or book is looked up
+  on TMDB or Google Books, with up to three candidates for a misspelled title); diary and calendar
+  drafts open in their normal forms, and a diary entry can be edited but not deleted. It runs
+  Claude Code on the server with read-only access (see AI worker below); the app makes every
+  write, with the user's login, after approval.
 - **Device lock**: the app opens with the phone's own fingerprint or PIN and locks again after a
   minute in the background. There is no in-app login screen after the one-time setup.
 - **Light and dark theme**, Indonesian and English UI.
@@ -92,9 +94,10 @@ email and password, then uses the phone's lock from then on.
 ### MCP server
 
 Tools: `lookup`, `finance_status`, `finance_summary`, `transactions`, `diary`, `media`, `events`,
-each limited to a date range or 100 rows. It reads `NIMBUS_SERVER`, `AI_EMAIL` and `AI_PASSWORD`
-(an `ai_readers` record made in the admin panel) from the environment or from the file named by
-`NIMBUS_ENV_FILE`.
+each limited to a date range or 100 rows, plus `media_search` (TMDB and Google Books, through the
+app's `media_api.dart`). It reads `NIMBUS_SERVER`, `AI_EMAIL` and `AI_PASSWORD` (an `ai_readers`
+record made in the admin panel), and optionally `TMDB_KEY` and `BOOKS_KEY` (Google Books refuses
+most server IPs without one), from the environment or from the file named by `NIMBUS_ENV_FILE`.
 
 ```sh
 cd mcp
@@ -121,7 +124,8 @@ and 1 CPU, and stays off the shared Traefik network.
 cd mcp
 dart compile exe bin/worker.dart --target-os=linux --target-arch=x64 -o ../server/ai/nimbus-worker
 dart compile exe bin/nimbus_mcp.dart --target-os=linux --target-arch=x64 -o ../server/ai/nimbus-mcp
-# server/ai.env: NIMBUS_SERVER, AI_EMAIL, AI_PASSWORD, CLAUDE_CODE_OAUTH_TOKEN (`claude setup-token`)
+# server/ai.env: NIMBUS_SERVER, AI_EMAIL, AI_PASSWORD, CLAUDE_CODE_OAUTH_TOKEN (`claude setup-token`),
+# and optionally TMDB_KEY, BOOKS_KEY
 cd ../server && docker compose up -d --build ai   # stop with: docker compose stop ai
 ```
 

@@ -866,6 +866,12 @@ abstract class AppLocalizations {
   /// **'Transaction not found'**
   String get assistantNotFound;
 
+  /// No description provided for @mediaNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Media item not found'**
+  String get mediaNotFound;
+
   /// No description provided for @assistantIncomplete.
   ///
   /// In en, this message translates to:

@@ -8,6 +8,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import '../../app/lib/features/media/media_api.dart' show booksKey, tmdbKey;
 import '../src/tools.dart';
 import 'package:pocketbase/pocketbase.dart';
 
@@ -21,6 +22,9 @@ Future<void> main() async {
   }
   String need(String k) => env[k] ?? (throw StateError('missing $k'));
   final pb = PocketBase(need('NIMBUS_SERVER'));
+  // Optional: without TMDB_KEY no films or series; without BOOKS_KEY Google often refuses a server.
+  tmdbKey = env['TMDB_KEY'] ?? tmdbKey;
+  booksKey = env['BOOKS_KEY'] ?? booksKey;
   final nimbus = Nimbus(pb);
 
   Future<void> login() async {
