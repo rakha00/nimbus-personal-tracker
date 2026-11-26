@@ -64,8 +64,7 @@ Future<void> main() async {
         }
         recent.add(DateTime.now());
         await requests.update(r.id, body: {'status': 'running'});
-        final result = await ask(r.getStringValue('mode'), r.getStringValue('prompt'), mcpConfig.path, work.path, claudeEnv,
-            env['AI_MODEL'] ?? 'haiku');
+        final result = await ask(r.getStringValue('prompt'), mcpConfig.path, work.path, claudeEnv, env['AI_MODEL'] ?? 'haiku');
         await requests.update(r.id, body: result);
         stderr.writeln('${r.id} ${result['status']} ${result['error'] ?? ''}');
       }
@@ -77,7 +76,7 @@ Future<void> main() async {
 }
 
 /// Runs one Claude Code call; returns the fields to save on the request.
-Future<Map<String, Object>> ask(String mode, String prompt, String mcpConfig, String cwd, Map<String, String> env, String model) async {
+Future<Map<String, Object>> ask(String prompt, String mcpConfig, String cwd, Map<String, String> env, String model) async {
   final proc = await Process.start(
     'claude',
     [
@@ -98,7 +97,7 @@ Future<Map<String, Object>> ask(String mode, String prompt, String mcpConfig, St
     environment: env,
     includeParentEnvironment: false,
   );
-  proc.stdin.write('Mode: $mode\n\n$prompt'); // stdin, so a prompt can't be read as a flag
+  proc.stdin.write(prompt); // stdin, so a prompt can't be read as a flag
   await proc.stdin.close();
   final out = proc.stdout.transform(utf8.decoder).join();
   final err = proc.stderr.transform(utf8.decoder).join();
@@ -126,17 +125,21 @@ through the nimbus tools. Reply in Indonesian, short and plain.
 Only handle requests about the user's own Nimbus records. For anything else (general questions,
 coding, other apps, the server) set answer to "Di luar Nimbus." with no drafts.
 
-The message starts with "Mode: record" or "Mode: ask".
+Decide from the message what the user wants; one message can do both.
 
-record: turn the note into drafts the user will check and save in the app. You never save
-anything yourself. Call lookup first for today's date and the exact names; use names exactly as
-listed. If the account, category or person is unclear, leave that field out rather than guess.
-Amounts are whole Rupiah ("25rb" = 25000, "1,5jt" = 1500000). Dates are YYYY-MM-DD; "kemarin",
-"besok" and weekdays are relative to today. One note can give several drafts. A diary draft is
-the text to add to that day's entry. answer: one short line saying what you drafted.
+Something to note (spending, income, a loan, a diary line, a film or book, an event): turn it
+into drafts the user will check and save in the app. You never save anything yourself. Call
+lookup first for today's date and the exact names; use names exactly as listed. If the account,
+category or person is unclear, leave that field out rather than guess. Amounts are whole Rupiah
+("25rb" = 25000, "1,5jt" = 1500000). Dates are YYYY-MM-DD; "kemarin", "besok" and weekdays are
+relative to today. One note can give several drafts. A diary draft is the text to add to that
+day's entry. Say in one short line what you drafted.
 
-ask: answer from the tools; never guess numbers, and use totals the tools give rather than adding
-many values yourself. Write money like Rp25.000. drafts: [].
+A question: answer from the tools; never guess numbers, and use totals the tools give rather
+than adding many values yourself. Write money like Rp25.000.
+
+If unsure whether it's a note or a question, make the drafts and say in the answer that they are
+only drafts.
 ''';
 
 const _str = {'type': 'string'};

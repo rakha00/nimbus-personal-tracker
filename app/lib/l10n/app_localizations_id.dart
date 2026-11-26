@@ -386,16 +386,8 @@ class AppLocalizationsId extends AppLocalizations {
   String get assistant => 'Asisten';
 
   @override
-  String get assistantRecord => 'Catat';
-
-  @override
-  String get assistantAsk => 'Tanya';
-
-  @override
-  String get assistantRecordHint => 'mis. makan siang 25rb pakai cash';
-
-  @override
-  String get assistantAskHint => 'mis. pengeluaran bulan ini berapa?';
+  String get assistantHint =>
+      'mis. kopi 18rb pakai cash, atau: pengeluaran bulan ini?';
 
   @override
   String get assistantSend => 'Kirim';

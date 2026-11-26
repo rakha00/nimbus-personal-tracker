@@ -17,9 +17,9 @@ toward a personal tracking app that an AI assistant can later read through MCP.
 - **Media log**: a wishlist of films and books, and a log of what's been watched or read, with
   date finished, a 1–5 rating and notes. Search fills in cover, year, director or author and
   synopsis from TMDB (films, needs `TMDB_KEY` in `config.json`) or Google Books.
-- **Assistant** (✦ in the app bar): *record* turns a sentence like "lunch 25k cash" into drafts
-  that open in the normal forms to check and save; *ask* answers questions about the data. It
-  runs Claude Code on the server with read-only access (see AI worker below).
+- **Assistant** (Claude logo in the app bar): one box for both. A note like "lunch 25k cash"
+  becomes drafts that open in the normal forms to check and save; a question about the data gets
+  a short answer. It runs Claude Code on the server with read-only access (see AI worker below).
 - **Device lock**: the app opens with the phone's own fingerprint or PIN and locks again after a
   minute in the background. There is no in-app login screen after the one-time setup.
 - **Light and dark theme**, Indonesian and English UI.
@@ -104,10 +104,10 @@ claude mcp add nimbus -- ssh root@<server> NIMBUS_ENV_FILE=/opt/nimbus/ai.env ni
 
 ### AI worker
 
-The app adds a row to `ai_requests` (mode `record` or `ask`, plus a short prompt). The worker
-(`mcp/bin/worker.dart`, container `ai` in `server/compose.yml`) picks it up, runs Claude Code
-headless with the owner's Claude subscription, and writes back an answer and, for `record`,
-drafts: suggested records only the user can save. The AI itself can't write.
+The app adds a row to `ai_requests` with a short prompt. The worker (`mcp/bin/worker.dart`,
+container `ai` in `server/compose.yml`) picks it up, runs Claude Code headless with the owner's
+Claude subscription, and writes back an answer and, when the prompt was a note, drafts:
+suggested records only the user can save. The AI itself can't write.
 
 Claude Code runs with no built-in tools (no shell, files or web), only the Nimbus MCP server, a
 short system prompt, JSON output against a fixed schema, no saved sessions, a 90 s timeout and

@@ -830,29 +830,11 @@ abstract class AppLocalizations {
   /// **'Assistant'**
   String get assistant;
 
-  /// No description provided for @assistantRecord.
+  /// No description provided for @assistantHint.
   ///
   /// In en, this message translates to:
-  /// **'Record'**
-  String get assistantRecord;
-
-  /// No description provided for @assistantAsk.
-  ///
-  /// In en, this message translates to:
-  /// **'Ask'**
-  String get assistantAsk;
-
-  /// No description provided for @assistantRecordHint.
-  ///
-  /// In en, this message translates to:
-  /// **'e.g. lunch 25k, paid cash'**
-  String get assistantRecordHint;
-
-  /// No description provided for @assistantAskHint.
-  ///
-  /// In en, this message translates to:
-  /// **'e.g. how much did I spend this month?'**
-  String get assistantAskHint;
+  /// **'e.g. coffee 18k cash, or: how much did I spend this month?'**
+  String get assistantHint;
 
   /// No description provided for @assistantSend.
   ///

@@ -386,16 +386,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assistant => 'Assistant';
 
   @override
-  String get assistantRecord => 'Record';
-
-  @override
-  String get assistantAsk => 'Ask';
-
-  @override
-  String get assistantRecordHint => 'e.g. lunch 25k, paid cash';
-
-  @override
-  String get assistantAskHint => 'e.g. how much did I spend this month?';
+  String get assistantHint =>
+      'e.g. coffee 18k cash, or: how much did I spend this month?';
 
   @override
   String get assistantSend => 'Send';

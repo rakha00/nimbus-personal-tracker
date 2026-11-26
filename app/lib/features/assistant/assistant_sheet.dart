@@ -37,8 +37,9 @@ class AssistantButton extends StatelessWidget {
       );
 }
 
-/// Record (the AI drafts records, the user checks and saves each in its normal form) or ask
-/// (a short answer). The AI runs on the server (`ai_requests` + worker) and can't write anything.
+/// One box for both: a note becomes drafts (the user checks and saves each in its normal form),
+/// a question gets a short answer; the AI decides which. It runs on the server (`ai_requests` +
+/// worker) and can't write anything.
 class AssistantSheet extends StatefulWidget {
   const AssistantSheet({super.key, required this.onSaved});
   final VoidCallback onSaved;
@@ -48,7 +49,6 @@ class AssistantSheet extends StatefulWidget {
 }
 
 class _AssistantSheetState extends State<AssistantSheet> {
-  String mode = 'record';
   final prompt = TextEditingController();
   bool busy = false;
   String? answer, error;
@@ -68,7 +68,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
     });
     final requests = pb.collection('ai_requests');
     try {
-      var r = await requests.create(body: {'owner': userId, 'mode': mode, 'prompt': text});
+      var r = await requests.create(body: {'owner': userId, 'mode': 'auto', 'prompt': text});
       // The worker usually answers in ~10 s and gives up at 90 s itself.
       final until = DateTime.now().add(const Duration(minutes: 2));
       while (!{'done', 'error'}.contains(r.getStringValue('status'))) {
@@ -154,16 +154,6 @@ class _AssistantSheetState extends State<AssistantSheet> {
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: ListView(shrinkWrap: true, padding: const EdgeInsets.fromLTRB(16, 8, 16, 24), children: [
-        SegmentedButton<String>(
-          showSelectedIcon: false,
-          segments: [
-            ButtonSegment(value: 'record', label: Text(t.assistantRecord), icon: const Icon(Icons.edit_note)),
-            ButtonSegment(value: 'ask', label: Text(t.assistantAsk), icon: const Icon(Icons.question_answer_outlined)),
-          ],
-          selected: {mode},
-          onSelectionChanged: busy ? null : (s) => setState(() => mode = s.first),
-        ),
-        const SizedBox(height: 12),
         TextField(
           controller: prompt,
           autofocus: true,
@@ -173,7 +163,7 @@ class _AssistantSheetState extends State<AssistantSheet> {
           maxLength: 500,
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
-            hintText: mode == 'record' ? t.assistantRecordHint : t.assistantAskHint,
+            hintText: t.assistantHint,
             suffixIcon: IconButton(onPressed: busy ? null : send, icon: const Icon(Icons.send), tooltip: t.assistantSend),
           ),
         ),
