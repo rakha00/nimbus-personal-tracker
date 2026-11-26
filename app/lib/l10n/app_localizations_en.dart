@@ -393,7 +393,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assistantSend => 'Send';
 
   @override
-  String get assistantDraftsHint => 'Tap a draft to check it, then save.';
+  String get assistantApprove => 'Approve';
+
+  @override
+  String get assistantReject => 'Reject';
+
+  @override
+  String get assistantBefore => 'Before';
+
+  @override
+  String get assistantNotFound => 'Transaction not found';
+
+  @override
+  String get assistantIncomplete => 'Incomplete';
+
+  @override
+  String get assistantComplete => 'Complete';
+
+  @override
+  String get assistantSaved => 'Saved';
+
+  @override
+  String get assistantRejected => 'Rejected';
 
   @override
   String get assistantRateLimit =>

@@ -18,8 +18,10 @@ toward a personal tracking app that an AI assistant can later read through MCP.
   date finished, a 1–5 rating and notes. Search fills in cover, year, director or author and
   synopsis from TMDB (films, needs `TMDB_KEY` in `config.json`) or Google Books.
 - **Assistant** (Claude logo in the app bar): one box for both. A note like "lunch 25k cash"
-  becomes drafts that open in the normal forms to check and save; a question about the data gets
-  a short answer. It runs Claude Code on the server with read-only access (see AI worker below).
+  becomes drafts, and a question about the data gets a short answer. Transactions to add, change
+  or delete are approved or rejected right in the panel; diary, media and calendar drafts open in
+  their normal forms. It runs Claude Code on the server with read-only access (see AI worker
+  below); the app makes every write, with the user's login, after approval.
 - **Device lock**: the app opens with the phone's own fingerprint or PIN and locks again after a
   minute in the background. There is no in-app login screen after the one-time setup.
 - **Light and dark theme**, Indonesian and English UI.
@@ -107,7 +109,8 @@ claude mcp add nimbus -- ssh root@<server> NIMBUS_ENV_FILE=/opt/nimbus/ai.env ni
 The app adds a row to `ai_requests` with a short prompt. The worker (`mcp/bin/worker.dart`,
 container `ai` in `server/compose.yml`) picks it up, runs Claude Code headless with the owner's
 Claude subscription, and writes back an answer and, when the prompt was a note, drafts:
-suggested records only the user can save. The AI itself can't write.
+suggested records, or changes and deletions pointing at a transaction id, that only the user can
+apply. The AI itself can't write.
 
 Claude Code runs with no built-in tools (no shell, files or web), only the Nimbus MCP server, a
 short system prompt, JSON output against a fixed schema, no saved sessions, a 90 s timeout and

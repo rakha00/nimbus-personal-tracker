@@ -393,7 +393,28 @@ class AppLocalizationsId extends AppLocalizations {
   String get assistantSend => 'Kirim';
 
   @override
-  String get assistantDraftsHint => 'Ketuk draf untuk memeriksa lalu simpan.';
+  String get assistantApprove => 'Setuju';
+
+  @override
+  String get assistantReject => 'Tolak';
+
+  @override
+  String get assistantBefore => 'Sebelumnya';
+
+  @override
+  String get assistantNotFound => 'Transaksi tidak ditemukan';
+
+  @override
+  String get assistantIncomplete => 'Belum lengkap';
+
+  @override
+  String get assistantComplete => 'Lengkapi';
+
+  @override
+  String get assistantSaved => 'Tersimpan';
+
+  @override
+  String get assistantRejected => 'Ditolak';
 
   @override
   String get assistantRateLimit =>

@@ -842,11 +842,53 @@ abstract class AppLocalizations {
   /// **'Send'**
   String get assistantSend;
 
-  /// No description provided for @assistantDraftsHint.
+  /// No description provided for @assistantApprove.
   ///
   /// In en, this message translates to:
-  /// **'Tap a draft to check it, then save.'**
-  String get assistantDraftsHint;
+  /// **'Approve'**
+  String get assistantApprove;
+
+  /// No description provided for @assistantReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get assistantReject;
+
+  /// No description provided for @assistantBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Before'**
+  String get assistantBefore;
+
+  /// No description provided for @assistantNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction not found'**
+  String get assistantNotFound;
+
+  /// No description provided for @assistantIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Incomplete'**
+  String get assistantIncomplete;
+
+  /// No description provided for @assistantComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get assistantComplete;
+
+  /// No description provided for @assistantSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get assistantSaved;
+
+  /// No description provided for @assistantRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get assistantRejected;
 
   /// No description provided for @assistantRateLimit.
   ///

@@ -38,4 +38,34 @@ void main() {
     expect(selected(tester, 'BCA'), isFalse);
     expect(selected(tester, 'Makan & Minum'), isFalse);
   });
+
+  group('draftBody (what Approve saves)', () {
+    final base = rec('tx1', {
+      'date': '2026-11-20 00:00:00.000Z', 'type': 'expense', 'amount': 25000,
+      'account': 'acc2', 'to_account': '', 'category': 'cat1', 'person': '', 'note': 'Makan siang',
+    });
+
+    test('a complete new transaction', () {
+      expect(data.draftBody({'type': 'expense', 'amount': 18000, 'date': '2026-11-26', 'account': 'cash', 'category': 'Makan & Minum', 'note': 'kopi'}), {
+        'date': '2026-11-26 00:00:00.000Z', 'type': 'expense', 'amount': 18000, 'account': 'acc2',
+        'to_account': '', 'category': 'cat1', 'person': '', 'note': 'kopi',
+      });
+    });
+
+    test('an unknown account or no amount cannot be approved', () {
+      expect(data.draftBody({'type': 'expense', 'amount': 18000, 'account': 'Dana'}), isNull);
+      expect(data.draftBody({'type': 'expense', 'account': 'Cash'}), isNull);
+    });
+
+    test('an update changes only the given fields', () {
+      final b = data.draftBody({'amount': 30000, 'account': 'BCA'}, base)!;
+      expect([b['amount'], b['account'], b['category'], b['date'], b['note']],
+          [30000, 'acc1', 'cat1', '2026-11-20 00:00:00.000Z', 'Makan siang']);
+    });
+
+    test('changing the type drops a category of the other kind', () {
+      expect(data.draftBody({'type': 'income'}, base)!['category'], '');
+      expect(data.draftBody({'type': 'transfer', 'to_account': 'Cash'}, base), isNull); // same account
+    });
+  });
 }

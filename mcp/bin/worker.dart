@@ -135,6 +135,12 @@ category or person is unclear, leave that field out rather than guess. Amounts a
 relative to today. One note can give several drafts. A diary draft is the text to add to that
 day's entry. Say in one short line what you drafted.
 
+To change or delete a transaction, first find it with the transactions tool and use its id
+exactly; never make up an id. A transaction_update draft holds the id and only the fields that
+change; a transaction_delete draft holds only the id. If more than one transaction could be
+meant, make no draft and list the candidates briefly (date, amount, note) so the user can say
+which one. The user approves or rejects each draft in the app.
+
 A question: answer from the tools; never guess numbers, and use totals the tools give rather
 than adding many values yourself. Write money like Rp25.000.
 
@@ -151,6 +157,17 @@ Map<String, Object> _draft(String module, Map<String, Object> props, List<String
       'additionalProperties': false,
     };
 
+const _txFields = {
+  'date': _date,
+  'type': {'type': 'string', 'enum': ['income', 'expense', 'transfer', 'lend', 'collect', 'borrow', 'repay']},
+  'amount': {'type': 'integer'},
+  'account': _str,
+  'to_account': _str,
+  'category': _str,
+  'person': _str,
+  'note': _str,
+};
+
 final outputSchema = {
   'type': 'object',
   'properties': {
@@ -159,16 +176,9 @@ final outputSchema = {
       'type': 'array',
       'items': {
         'anyOf': [
-          _draft('transaction', {
-            'date': _date,
-            'type': {'type': 'string', 'enum': ['income', 'expense', 'transfer', 'lend', 'collect', 'borrow', 'repay']},
-            'amount': {'type': 'integer'},
-            'account': _str,
-            'to_account': _str,
-            'category': _str,
-            'person': _str,
-            'note': _str,
-          }, ['date', 'type', 'amount']),
+          _draft('transaction', _txFields, ['date', 'type', 'amount']),
+          _draft('transaction_update', {'id': _str, ..._txFields}, ['id']),
+          _draft('transaction_delete', {'id': _str}, ['id']),
           _draft('diary', {'date': _date, 'text': _str}, ['date', 'text']),
           _draft('media', {
             'media_type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book']},

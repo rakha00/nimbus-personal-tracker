@@ -152,6 +152,7 @@ class Nimbus {
                 (person == null || r.getStringValue('person').toLowerCase() == person) &&
                 (q == null || r.getStringValue('note').toLowerCase().contains(q)))
               {
+                'id': r.id, // so a change or deletion can point at it
                 'date': r.getStringValue('date').substring(0, 10),
                 'type': r.getStringValue('type'),
                 'amount': r.getIntValue('amount'),

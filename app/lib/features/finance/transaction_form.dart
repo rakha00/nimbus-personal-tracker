@@ -8,8 +8,6 @@ import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 import 'finance_data.dart';
 
-const _debtTypes = ['lend', 'collect', 'borrow', 'repay'];
-
 /// Add or edit one transaction. The "debt" tab covers lend/collect/borrow/repay.
 /// Pops true once saved or deleted.
 class TransactionForm extends StatefulWidget {
@@ -22,10 +20,6 @@ class TransactionForm extends StatefulWidget {
   State<TransactionForm> createState() => _TransactionFormState();
 }
 
-/// Id of the record whose name matches, ignoring case; '' if none, so the user picks.
-String _idByName(Iterable<RecordModel> list, Object? name) =>
-    list.where((x) => x.getStringValue('name').toLowerCase() == '${name ?? ''}'.toLowerCase()).firstOrNull?.id ?? '';
-
 class _TransactionFormState extends State<TransactionForm> {
   late final r = widget.record;
   late final dr = widget.draft ?? const {};
@@ -33,11 +27,11 @@ class _TransactionFormState extends State<TransactionForm> {
   late final amount = TextEditingController(text: r == null ? '${dr['amount'] ?? ''}' : '${r!.getIntValue('amount')}');
   late String account = r?.getStringValue('account') ??
       (widget.draft != null
-          ? _idByName(widget.data.accounts, dr['account'])
+          ? idByName(widget.data.accounts, dr['account'])
           : widget.data.accounts.isEmpty ? '' : widget.data.accounts.first.id);
-  late String toAccount = r?.getStringValue('to_account') ?? _idByName(widget.data.accounts, dr['to_account']);
+  late String toAccount = r?.getStringValue('to_account') ?? idByName(widget.data.accounts, dr['to_account']);
   late String category = r?.getStringValue('category') ??
-      _idByName(widget.data.categories.where((c) => c.getStringValue('kind') == type), dr['category']);
+      idByName(widget.data.categories.where((c) => c.getStringValue('kind') == type), dr['category']);
   late String person = r?.getStringValue('person') ?? dr['person'] as String? ?? '';
   late final note = TextEditingController(text: r?.getStringValue('note') ?? dr['note'] as String? ?? '');
   late DateTime date = r != null
@@ -46,28 +40,21 @@ class _TransactionFormState extends State<TransactionForm> {
   bool busy = false;
   String? error;
 
-  String get kind => _debtTypes.contains(type) ? 'debt' : type;
+  String get kind => debtTypes.contains(type) ? 'debt' : type;
 
   Future<void> save() async {
-    final t = AppLocalizations.of(context);
-    final value = int.tryParse(amount.text) ?? 0;
-    final missing = value <= 0 ||
-        (kind != 'debt' && account.isEmpty) ||
-        (kind == 'transfer' && (toAccount.isEmpty || toAccount == account)) ||
-        (kind == 'debt' && person.trim().isEmpty);
-    if (missing) return setState(() => error = t.required);
-
-    final body = {
-      'owner': userId,
-      'date': toPbDate(date),
-      'type': type,
-      'amount': value,
-      'account': account,
-      'to_account': kind == 'transfer' ? toAccount : '',
-      'category': kind == 'expense' || kind == 'income' ? category : '',
-      'person': kind == 'debt' ? person.trim() : '',
-      'note': note.text.trim(),
-    };
+    final fields = txBody(
+      date: toPbDate(date),
+      type: type,
+      amount: int.tryParse(amount.text) ?? 0,
+      account: account,
+      toAccount: toAccount,
+      category: category,
+      person: person,
+      note: note.text,
+    );
+    if (fields == null) return setState(() => error = AppLocalizations.of(context).required);
+    final body = {'owner': userId, ...fields};
     await _run(() => r == null
         ? pb.collection('transactions').create(body: body)
         : pb.collection('transactions').update(r!.id, body: body));
