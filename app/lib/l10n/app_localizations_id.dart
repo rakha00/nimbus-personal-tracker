@@ -328,6 +328,12 @@ class AppLocalizationsId extends AppLocalizations {
   String get mediaAnime => 'Anime';
 
   @override
+  String get mediaGame => 'Game';
+
+  @override
+  String get mediaDeveloper => 'Developer (opsional)';
+
+  @override
   String get mediaProgress => 'Sedang';
 
   @override

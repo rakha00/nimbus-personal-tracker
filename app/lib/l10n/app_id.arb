@@ -103,6 +103,8 @@
   "mediaFilterHint": "Cari judul atau pembuat",
   "mediaSeries": "Serial",
   "mediaAnime": "Anime",
+  "mediaGame": "Game",
+  "mediaDeveloper": "Developer (opsional)",
   "mediaProgress": "Sedang",
   "mediaStart": "Mulai",
   "mediaCreator": "Pembuat (opsional)",

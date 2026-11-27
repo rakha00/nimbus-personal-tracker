@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nimbus/features/media/media_api.dart';
 import 'package:nimbus/features/media/media_screen.dart';
 import 'package:pocketbase/pocketbase.dart';
 
@@ -30,5 +31,12 @@ void main() {
   test('films have no "in progress", and only finished items keep a rating', () {
     expect(mediaBody({'type': 'film', 'title': 'X', 'status': 'progress'})!['status'], 'wishlist');
     expect(mediaBody({'type': 'book', 'title': 'X', 'status': 'progress', 'rating': 4, 'finished_on': '2026-01-01'}), containsPair('rating', 0));
+  });
+
+  test('a RAWG game becomes a hit with developers, year and key image', () {
+    final h = parseRawg({'results': [{'id': 59, 'name': 'Chrono Trigger', 'released': '1995-03-11', 'background_image': 'https://media.rawg.io/c.jpg', 'developers': [{'name': 'Square'}]}]}).single;
+    expect([h['type'], h['external_id'], h['title'], h['creator'], h['year'], h['cover_url']],
+        ['game', 'rawg:59', 'Chrono Trigger', 'Square', 1995, 'https://media.rawg.io/c.jpg']);
+    expect(mediaBody({...h, 'status': 'progress'})!['status'], 'progress'); // unlike films, games can be in progress
   });
 }

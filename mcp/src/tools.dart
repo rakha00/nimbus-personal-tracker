@@ -7,7 +7,7 @@ import 'package:pocketbase/pocketbase.dart';
 // Same balance/debt math as the app, so answers match what the phone shows. Imported by path
 // (not package:) since the app is a Flutter package; that's also why this file isn't in lib/.
 import '../../app/lib/features/finance/ledger.dart';
-// TMDB / Google Books search, shared with the app's media screen.
+// TMDB / Google Books / RAWG search, shared with the app's media screen.
 import '../../app/lib/features/media/media_api.dart';
 
 /// Indonesia (WIB) has no DST. ponytail: fixed +7; make it configurable if the user ever moves zones.
@@ -183,13 +183,13 @@ class Nimbus {
       },
     ),
     'media': (
-      description: 'Films, series, anime and books in the media log, at most $_limit, latest finished first. '
-          'status: wishlist, progress (watching/reading) or done. query matches items whose title or '
+      description: 'Films, series, anime, books and games in the media log, at most $_limit, latest finished first. '
+          'status: wishlist, progress (watching/reading/playing) or done. query matches items whose title or '
           'creator has every typed word, ignoring case and punctuation ("teka teki tika" finds '
           '"Teka-Teki Tika"); titles may be stored in their original language.',
       schema: _schema({
         'status': {'type': 'string', 'enum': ['wishlist', 'progress', 'done']},
-        'type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book']},
+        'type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book', 'game']},
         'query': _str('Text to find in title or creator'),
       }),
       run: (args) async {
@@ -218,10 +218,10 @@ class Nimbus {
       },
     ),
     'media_search': (
-      description: 'Search TMDB (film, series, anime) or Google Books (book) by title; up to 5 hits with '
+      description: 'Search TMDB (film, series, anime), Google Books (book) or RAWG (game) by title; up to 5 hits with '
           'external_id, title, year, creator (books only) and cover_url, best match first. Not the log: use media for that.',
       schema: _schema({
-        'type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book']},
+        'type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book', 'game']},
         'query': _str('Title to search for'),
       }, required: ['type', 'query']),
       run: (args) async {

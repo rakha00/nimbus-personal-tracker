@@ -405,7 +405,7 @@ class _ApprovalTile extends StatelessWidget {
   }
 }
 
-/// A film, series, anime or book to add, change or delete. A new one shows its cover; changes and
+/// A film, series, anime, book or game to add, change or delete. A new one shows its cover; changes and
 /// deletions show the item as it is in the log.
 class _MediaDraftTile extends StatelessWidget {
   const _MediaDraftTile({required this.draft, required this.base, required this.outcome, required this.onApprove, required this.onReject});
@@ -433,7 +433,7 @@ class _MediaDraftTile extends StatelessWidget {
       return (
         '${x['title'] ?? ''}${year > 0 ? ' ($year)' : ''}',
         [
-          switch (x['type']) { 'series' => t.mediaSeries, 'anime' => t.mediaAnime, 'book' => t.mediaBook, _ => t.mediaFilm },
+          switch (x['type']) { 'series' => t.mediaSeries, 'anime' => t.mediaAnime, 'book' => t.mediaBook, 'game' => t.mediaGame, _ => t.mediaFilm },
           switch (x['status']) { 'done' => t.mediaDone, 'progress' => t.mediaProgress, _ => t.mediaWishlist },
           if (done) _day(context, x['finished_on']),
           if (done && rating > 0) '★$rating',

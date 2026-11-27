@@ -15,12 +15,13 @@ IconData typeIcon(String type) => switch (type) {
       'book' => Icons.menu_book_outlined,
       'series' => Icons.tv_outlined,
       'anime' => Icons.animation,
+      'game' => Icons.sports_esports_outlined,
       _ => Icons.movie_outlined,
     };
 
-/// Film / Serial / Anime / Buku as (id, label) pairs.
+/// Film / Serial / Anime / Buku / Game as (id, label) pairs.
 List<(String, String)> mediaTypes(AppLocalizations t) =>
-    [('film', t.mediaFilm), ('series', t.mediaSeries), ('anime', t.mediaAnime), ('book', t.mediaBook)];
+    [('film', t.mediaFilm), ('series', t.mediaSeries), ('anime', t.mediaAnime), ('book', t.mediaBook), ('game', t.mediaGame)];
 
 List<ButtonSegment<String>> typeSegments(AppLocalizations t) =>
     [for (final (id, label) in mediaTypes(t)) ButtonSegment(value: id, label: Text(label))];
@@ -321,7 +322,7 @@ class Stars extends StatelessWidget {
   }
 }
 
-/// Type a title, pick a hit from TMDB / Google Books; the form opens already filled.
+/// Type a title, pick a hit from TMDB / Google Books / RAWG; the form opens already filled.
 class MediaSearch extends StatefulWidget {
   const MediaSearch({super.key, required this.type, required this.status, required this.saved});
   final String type, status;
@@ -582,7 +583,7 @@ class _MediaFormState extends State<MediaForm> {
           const SizedBox(height: 16),
           Labeled(t.mediaTitle, TextField(controller: title, autofocus: title.text.isEmpty, textCapitalization: TextCapitalization.sentences)),
           const SizedBox(height: 16),
-          Labeled(switch (type) { 'book' => t.mediaAuthor, 'series' => t.mediaCreator, 'anime' => t.mediaStudio, _ => t.mediaDirector },
+          Labeled(switch (type) { 'book' => t.mediaAuthor, 'series' => t.mediaCreator, 'anime' => t.mediaStudio, 'game' => t.mediaDeveloper, _ => t.mediaDirector },
               TextField(controller: creator, textCapitalization: TextCapitalization.words)),
           const SizedBox(height: 16),
           Labeled(t.mediaYear, TextField(

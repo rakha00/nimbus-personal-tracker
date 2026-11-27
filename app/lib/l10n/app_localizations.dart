@@ -716,6 +716,18 @@ abstract class AppLocalizations {
   /// **'Anime'**
   String get mediaAnime;
 
+  /// No description provided for @mediaGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Game'**
+  String get mediaGame;
+
+  /// No description provided for @mediaDeveloper.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer (optional)'**
+  String get mediaDeveloper;
+
   /// No description provided for @mediaProgress.
   ///
   /// In en, this message translates to:

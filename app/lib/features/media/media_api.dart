@@ -39,6 +39,25 @@ List<Hit> parseBooks(Map<String, dynamic> json) => [
           },
     ];
 
+/// RAWG has no box art, only a landscape key image; the 2:3 cover crops its middle.
+List<Hit> parseRawg(Map<String, dynamic> json) => [
+      for (final g in (json['results'] as List? ?? []).cast<Map<String, dynamic>>())
+        {
+          'type': 'game',
+          'external_id': 'rawg:${g['id']}',
+          'title': g['name'] ?? '',
+          'creator': [for (final d in g['developers'] as List? ?? []) d['name']].join(', '),
+          'year': _year(g['released']),
+          'cover_url': g['background_image'] ?? '',
+          'synopsis': g['description_raw'] ?? '',
+        },
+    ];
+
+var rawgKey = const String.fromEnvironment('RAWG_KEY');
+
+Future<Map<String, dynamic>> _rawg(String path, [Map<String, String> query = const {}]) =>
+    _get(Uri.https('api.rawg.io', '/api/games$path', {...query, 'key': rawgKey}));
+
 Future<Map<String, dynamic>> _get(Uri uri, [Map<String, String>? headers]) async {
   final res = await http.get(uri, headers: headers).timeout(const Duration(seconds: 15));
   if (res.statusCode != 200) throw http.ClientException('HTTP ${res.statusCode}', uri);
@@ -62,23 +81,25 @@ Uri _books(String path, Map<String, String> query) =>
 
 /// [lang] is the app's language code ("id" or "en").
 Future<List<Hit>> searchMedia(String type, String query, String lang) async => switch (type) {
+      'game' => parseRawg(await _rawg('', {'search': query, 'page_size': '20'})),
       'book' => parseBooks(await _get(_books('', {'q': query, 'maxResults': '20'}))),
       _ => parseTmdb(
           await _tmdb(type == 'film' ? '/search/movie' : '/search/tv', {'query': query, 'language': lang == 'id' ? 'id-ID' : 'en-US'}),
           type),
     };
 
-/// One hit by its external_id ("tmdb:550", "tmdbtv:1399", "gbooks:abc"), as [searchMedia] would give it.
+/// One hit by its external_id ("tmdb:550", "tmdbtv:1399", "gbooks:abc", "rawg:123"), as [searchMedia] would give it.
 /// [type] tells series from anime, which share TMDB's TV ids.
 Future<Hit> fetchHit(String externalId, String type, String lang) async {
   final [source, id] = externalId.split(':');
+  if (source == 'rawg') return parseRawg({'results': [await _rawg('/$id')]}).first;
   if (source == 'gbooks') return parseBooks({'items': [await _get(_books('/$id', {}))]}).first;
   final m = await _tmdb(source == 'tmdb' ? '/movie/$id' : '/tv/$id', {'language': lang == 'id' ? 'id-ID' : 'en-US'});
   // Details carry `genres`, not the search's `genre_ids`, so skip parseTmdb's anime filter.
   return {...parseTmdb({'results': [m]}, source == 'tmdb' ? 'film' : 'series').first, 'type': type};
 }
 
-/// A film's director, a series' creators, an anime's studios (and an English synopsis when there's none
+/// A film's director, a series' creators, an anime's studios, a game's developers (and an English synopsis when there's none
 /// in Indonesian) need extra calls, so they're fetched only for the picked hit. Books are already complete.
 Future<Hit> completeHit(Hit hit) async {
   final id = (hit['external_id'] as String).split(':').last;
@@ -89,6 +110,7 @@ Future<Hit> completeHit(Hit hit) async {
     final people = tv[hit['type'] == 'anime' ? 'production_companies' : 'created_by'] as List? ?? [];
     return {...hit, 'creator': [for (final c in people) c['name']].join(', '), 'synopsis': synopsis};
   }
+  if (hit['type'] == 'game') return fetchHit(hit['external_id'] as String, 'game', '');
   if (hit['type'] != 'film') return hit;
   final credits = await _tmdb('/movie/$id/credits', {});
   final directors = [

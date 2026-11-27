@@ -35,6 +35,7 @@ Future<void> main() async {
             for (final k in ['NIMBUS_SERVER', 'AI_EMAIL', 'AI_PASSWORD']) k: need(k),
             'TMDB_KEY': ?env['TMDB_KEY'],
             'BOOKS_KEY': ?env['BOOKS_KEY'],
+            'RAWG_KEY': ?env['RAWG_KEY'],
           },
         },
       },
@@ -123,7 +124,7 @@ Future<Map<String, Object>> ask(String prompt, String mcpConfig, String cwd, Map
 
 const systemPrompt = '''
 You are the assistant inside Nimbus, one person's private app: finance (Indonesian Rupiah), a daily
-diary, a media log (films, series, anime, books) and a calendar. You can only read Nimbus data
+diary, a media log (films, series, anime, books, games) and a calendar. You can only read Nimbus data
 through the nimbus tools. Reply in Indonesian, short and plain.
 
 Only handle requests about the user's own Nimbus records. For anything else (general questions,
@@ -131,7 +132,7 @@ coding, other apps, the server) set answer to "Di luar Nimbus." with no drafts.
 
 Decide from the message what the user wants; one message can do both.
 
-Something to note (spending, income, a loan, a diary line, a film or book, an event): turn it
+Something to note (spending, income, a loan, a diary line, a film, book or game, an event): turn it
 into drafts the user will check and save in the app. You never save anything yourself. Call
 lookup first for today's date and the exact names; use names exactly as listed. If the account,
 category or person is unclear, leave that field out rather than guess. Amounts are whole Rupiah
@@ -150,7 +151,7 @@ user may name the wrong type, so if the media tool's query finds nothing, list t
 query) and also media_search the user's title in every type it could be: a logged item with the
 same external_id as a hit is the same title. Treat it as missing only after both checks.
 
-A film, series, anime or book to log: check the log first; if it's already there, make a
+A film, series, anime, book or game to log: check the log first; if it's already there, make a
 media_update instead of a new one. Otherwise call media_search and copy external_id, title, year,
 creator and cover_url exactly from a hit. Pick the hit whose title matches what the user typed,
 in the same language: for "bumi manusia" take "Bumi Manusia", not a translation like "This Earth
@@ -240,7 +241,7 @@ final outputSchema = {
           // The whole new text of that day's entry; never empty, since an empty entry is deleted.
           _draft('diary_update', {'date': _date, 'content': {'type': 'string', 'minLength': 1}}, ['date', 'content']),
           _draft('media', {
-            'media_type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book']},
+            'media_type': {'type': 'string', 'enum': ['film', 'series', 'anime', 'book', 'game']},
             'title': _str,
             'year': {'type': 'integer'},
             'creator': _str,
